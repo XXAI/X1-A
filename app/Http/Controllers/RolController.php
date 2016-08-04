@@ -19,7 +19,7 @@ class RolController extends Controller {
      */
     public function __construct()
     {
-        $this->middleware('permisos:GET.LISTAR_ROLES|POST.ADMIN_ROLES|PUT.ADMIN_ROLES|DELETE.ADMIN_ROLES');
+        $this->middleware('permisos:GET.5CA553826561D|POST.FDB1C17AAF43A|PUT.FDB1C17AAF43A|DELETE.FDB1C17AAF43A');
     }
 
 	/**

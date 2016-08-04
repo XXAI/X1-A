@@ -18,7 +18,7 @@ class UsuarioController extends Controller {
      */
     public function __construct()
     {
-        $this->middleware('permisos:GET.LISTAR_USUARIOS|POST.ADMIN_USUARIOS|PUT.ADMIN_USUARIOS|DELETE.ADMIN_USUARIOS');
+        $this->middleware('permisos:GET.56C1E52B98B62|POST.EFDA3A4948D9E|PUT.EFDA3A4948D9E|DELETE.EFDA3A4948D9E');
     }
 
 	/**
