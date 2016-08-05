@@ -222,46 +222,13 @@ class ActaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    /*
     public function update(Request $request, $id){
         $mensajes = [
             'required'      => "required",
             'unique'        => "unique",
             'date'          => "date"
         ];
-
-        $reglas_acta = [
-            'ciudad'            =>'required',
-            'fecha'             =>'required',
-            'hora_inicio'       =>'required',
-            'hora_termino'      =>'required',
-            'lugar_reunion'     =>'required',
-            'empresa'           =>'required',
-            'firma_solicita'    =>'required',
-            'firma_director'    =>'required',
-            'requisiciones'     =>'required|array|min:1'
-        ];
-
-        $reglas_requisicion = [
-            'pedido'            =>'required',
-            'lotes'             =>'required',
-            'tipo_requisicion'  =>'required',
-            'dias_surtimiento'  =>'required',
-            'sub_total'         =>'required',
-            'gran_total'        =>'required',
-            'iva'               =>'sometimes_required',
-            'firma_solicita'    =>'required',
-            'firma_director'    =>'required'
-        ];
-
-        $inputs = Input::all();
-        //$inputs = Input::only('id','servidor_id','password','nombre', 'apellidos');
-        //var_dump(json_encode($inputs));die;
-
-        $v = Validator::make($inputs, $reglas_acta, $mensajes);
-        if ($v->fails()) {
-            return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
-        }
-
         try {
 
             DB::beginTransaction();
@@ -338,6 +305,7 @@ class ActaController extends Controller
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
+    */
 
     /**
      * Remove the specified resource from storage.
@@ -345,6 +313,7 @@ class ActaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    /*
     public function destroy($id){
         try {
             $acta = Acta::with('requisiciones')->find($id);
@@ -358,4 +327,5 @@ class ActaController extends Controller
            return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
         }
     }
+    */
 }

@@ -9,8 +9,8 @@ class Requisicion extends Model {
 	protected $table = 'requisiciones';
 	protected $fillable = ['acta_id', 'numero', 'pedido', 'lotes', 'empresa_clave', 'tipo_requisicion', 'dias_surtimiento', 'sub_total', 'gran_total', 'iva', 'firma_solicita', 'firma_director'];
 
-	public function detalles(){
-        return $this->hasMany('App\Models\DetalleRequisicion','requisicion_id');
+	public function acta(){
+        return $this->hasOne('App\Models\Acta','id','acta_id');
     }
 
     public function insumos(){
