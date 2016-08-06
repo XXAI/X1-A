@@ -116,10 +116,18 @@
 	<div class="header">
 		<table>
 			<tr>
-				<td class="imagen izquierda"><img src="{{ public_path().'/img/LogoFederal.png' }}" width="125"></td>
-				<td class="imagen centro"><img src="{{ public_path().'/img/Marca.png' }}" width="125"></td>
-				<td class="imagen centro"><img src="{{ public_path().'/img/EscudoGobiernoChiapas.png' }}" width="125"></td>
-				<td class="imagen derecha"><img src="{{ public_path().'/img/LogoInstitucional.png' }}" width="125"></td>
+				<td class="imagen izquierda">
+					<img src="{{ public_path().'/img/LogoFederal.png' }}" height="45">
+				</td>
+				<td class="imagen centro">
+					<img src="{{ public_path().'/img/MxSnTrabInf.jpg' }}" height="45">
+				</td>
+				<td class="imagen centro">
+					<img src="{{ public_path().'/img/EscudoGobiernoChiapas.png' }}" height="45">
+				</td>
+				<td class="imagen derecha">
+					<img src="{{ public_path().'/img/LogoInstitucional.png' }}" height="45">
+				</td>
 			</tr>
 			<tr><td colspan="4" class="titulo2" align="center">INSTITUTO DE SALUD</td></tr>
 			<tr><td colspan="4" class="titulo2" align="center">DIRECCIÓN DE ATENCIÓN MÉDICA</td></tr>

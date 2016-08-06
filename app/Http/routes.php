@@ -111,6 +111,7 @@ Route::post('/signin', function () {
 
 Route::group([ 'prefix' => 'v1'], function () {
     Route::get('requisicion-pdf/{id}',    'RequisicionController@generarRequisicionPDF');
+    Route::get('pedido-pdf/{id}',    'PedidoController@generarPedidoPDF');
     
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     
@@ -177,6 +178,8 @@ Route::group([ 'prefix' => 'v1'], function () {
             Route::resource('actas', 'ActaController',
                         ['only' => ['index', 'show','store', 'update', 'destroy']]);
             Route::resource('requisiciones', 'RequisicionController',
+                        ['only' => ['index', 'show', 'update']]);
+            Route::resource('pedidos', 'PedidoController',
                         ['only' => ['index', 'show', 'update']]);
     });
    

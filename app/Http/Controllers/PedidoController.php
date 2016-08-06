@@ -11,7 +11,7 @@ use App\Models\Requisicion;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
 
-class RequisicionController extends Controller
+class PedidoController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -31,7 +31,7 @@ class RequisicionController extends Controller
             $filtro = Input::get('filtro');
 
             $recurso = Requisicion::leftjoin('actas','actas.id','=','requisiciones.acta_id')
-                                    ->where('requisiciones.estatus','>=',1);
+                                    ->where('requisiciones.estatus','=',2);
 
             if($query){
                 $recurso = $recurso->where(function($condition)use($query){
@@ -67,7 +67,7 @@ class RequisicionController extends Controller
         return Response::json([ 'data' => Requisicion::with('acta','insumos')->find($id) ],200);
     }
 
-    public function generarRequisicionPDF($id){
+    public function generarPedidoPDF($id){
         $data = [];
         $data['requisicion'] = Requisicion::with('acta','insumos')->find($id);
 
@@ -78,8 +78,9 @@ class RequisicionController extends Controller
         $data['unidad'] = $data['requisicion']->acta->clues;
         $data['empresa'] = $data['requisicion']->acta->empresa_clave;
 
-        $pdf = PDF::loadView('pdf.requisicion', $data);
+        $pdf = PDF::loadView('pdf.pedido', $data);
 
+        /*
         if($data['requisicion']->estatus == 1){
             $pdf->output();
             $dom_pdf = $pdf->getDomPDF();
@@ -88,8 +89,9 @@ class RequisicionController extends Controller
             $h = $canvas->get_height();
             $canvas->page_text(20, $h - 300, "SIN VALIDAR", Font_Metrics::get_font("arial", "bold"),85, array(0.85, 0.85, 0.85));
         }
+        */
 
-        return $pdf->stream('Requisicion-'.$data['requisicion']->acta->folio.'-'.$data['requisicion']->tipo_requisicion.'-'.$data['requisicion']->numero.'.pdf');
+        return $pdf->stream('Pedido-'.$data['requisicion']->acta->folio.'-'.$data['requisicion']->tipo_requisicion.'-'.$data['requisicion']->numero.'.pdf');
     }
 
     /**
@@ -111,33 +113,11 @@ class RequisicionController extends Controller
 
             $requisicion = Requisicion::find($id);
 
-            if($requisicion->estatus == 2){
-                throw new \Exception("La Requisición no se puede editar ya que se encuentra con estatus de enviada");
+            if($requisicion->estatus < 2){
+                throw new \Exception("La Requisición no se puede editar ya que no se encuentra con estatus de enviada");
             }
 
             $requisicion->estatus = Input::get('estatus');
-            
-            if($requisicion->estatus == 1){
-                $requisicion->sub_total = Input::get('sub_total');
-                $requisicion->gran_total = Input::get('gran_total');
-            }
-
-            if($requisicion->save()){
-                if($requisicion->estatus == 1){
-                    $inputs_insumos = Input::get('insumos');
-                    $insumos = [];
-                    foreach ($inputs_insumos as $req_insumo) {
-                        $insumos[] = [
-                            'insumo_id' => $req_insumo['insumo_id'],
-                            'cantidad' => $req_insumo['cantidad'],
-                            'total' => $req_insumo['total'],
-                            'cantidad_aprovada' => $req_insumo['cantidad_aprovada'],
-                            'total_aprovado' => $req_insumo['total_aprovado']
-                        ];
-                    }
-                    $requisicion->insumos()->sync($insumos);
-                }
-            }
 
             DB::commit();
 
@@ -147,26 +127,4 @@ class RequisicionController extends Controller
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    /*
-    public function destroy($id){
-        try {
-            $acta = Acta::with('requisiciones')->find($id);
-            foreach ($acta->requisiciones as $requisicion) {
-                $requisicion->insumos()->sync([]);
-            }
-            Requisicion::where('acta_id',$id)->delete();
-            Acta::destroy($id);
-            return Response::json(['data'=>'Elemento eliminado con exito'],200);
-        } catch (Exception $e) {
-           return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
-        }
-    }
-    */
 }
