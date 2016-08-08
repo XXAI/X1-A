@@ -8,6 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
 
@@ -69,26 +70,32 @@ class RequisicionController extends Controller
 
     public function generarRequisicionPDF($id){
         $data = [];
-        $data['requisicion'] = Requisicion::with('acta','insumos')->find($id);
+        $data['requisicion'] = Requisicion::with('acta')->find($id);
+        $data['empresa'] = Empresa::where('pedido','=',$data['requisicion']->pedido)
+                                    ->where('clave','=',$data['requisicion']->empresa_clave)->first();
 
+        $empresa_clave = $data['empresa']->clave;
+        $data['requisicion']->load(['insumos'=>function($query)use($empresa_clave){
+            $query->select('id','pedido_'.$empresa_clave.' AS pedido','requisicion','lote','clave','descripcion' ,'marca_'.$empresa_clave.' AS marca','unidad','insumos.cantidad','precio_'.$empresa_clave.' AS precio','tipo','cause');
+        }]);
         if(!$data['requisicion']->estatus){
             return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
         }
 
         $data['unidad'] = $data['requisicion']->acta->clues;
-        $data['empresa'] = $data['requisicion']->acta->empresa_clave;
+        //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
 
         $pdf = PDF::loadView('pdf.requisicion', $data);
-
+        /*
         if($data['requisicion']->estatus == 1){
             $pdf->output();
             $dom_pdf = $pdf->getDomPDF();
             $canvas = $dom_pdf->get_canvas();
             $w = $canvas->get_width();
             $h = $canvas->get_height();
-            $canvas->page_text(20, $h - 300, "SIN VALIDAR", Font_Metrics::get_font("arial", "bold"),85, array(0.85, 0.85, 0.85));
+            $canvas->page_text(20, $h - 600, "SIN VALIDAR", Font_Metrics::get_font("arial", "bold"),85, array(0.85, 0.85, 0.85));
         }
-
+        */
         return $pdf->stream('Requisicion-'.$data['requisicion']->acta->folio.'-'.$data['requisicion']->tipo_requisicion.'-'.$data['requisicion']->numero.'.pdf');
     }
 

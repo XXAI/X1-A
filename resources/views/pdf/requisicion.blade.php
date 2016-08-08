@@ -9,6 +9,18 @@
             margin-right: 6.6em;
             margin-bottom: 1.3em;
         }
+        #watermark {
+			position: fixed;
+			top: 15%;
+			left: 105px;
+			transform: rotate(45deg);
+			transform-origin: 50% 50%;
+			opacity: .3;
+			font-size: 120px;
+			color: lightgrey;
+			width: 480px;
+			text-align: center;
+		}
         table{
         	width:100%;
         	border-collapse: collapse;
@@ -145,7 +157,7 @@
 				<th class="encabezado-tabla texto-izquierda" width="80%">COORDINACIÓN DE ABASTO</th>
 			</tr>
 			<tr class="tabla-datos">
-				<th class="encabezado-tabla texto-izquierda" colspan="2" width="20%">CONCEPTO Y PARTIDA PRESUPUESTAL: </th>
+				<th class="encabezado-tabla texto-izquierda" colspan="2" width="20%">CONCEPTO Y PARTIDA PRESUPUESTAL: {{$empresa->partida_presupuestal}}</th>
 			</tr>
 		</thead>
 	</table>
@@ -170,7 +182,7 @@
 				<td class="encabezado-tabla">{{$unidad}}</td>
 				<td class="encabezado-tabla">{{$requisicion->pedido}}</td>
 				<td class="encabezado-tabla">{{$requisicion->lotes}}</td>
-				<td class="encabezado-tabla">{{$empresa}}</td>
+				<td class="encabezado-tabla">{{$empresa->nombre}}</td>
 				<td class="encabezado-tabla">{{$requisicion->dias_surtimiento}}</td>
 			</tr>
 		</thead>
@@ -254,5 +266,8 @@
 			</tr>
 		</tbody>
 	</table>
+	@if($requisicion->estatus == 1)
+	<div id="watermark">SIN VALIDAR</div>
+	@endif
 </body>
 </html>

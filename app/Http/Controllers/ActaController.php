@@ -54,6 +54,15 @@ class ActaController extends Controller
         }
     }
 
+    function decryptData($value){
+       $key = "289374DSFA2";
+       $crypttext = $value;
+       $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
+       $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+       $decrypttext = mcrypt_decrypt(MCRYPT_RIJNDAEL_256, $key, $crypttext, MCRYPT_MODE_ECB, $iv);
+       return trim($decrypttext);
+    } 
+
     /**
      * Store a newly created resource in storage.
      *
@@ -99,11 +108,27 @@ class ActaController extends Controller
             if(Input::hasFile('zipfile')){
 
                 $destinationPath = storage_path().'/app/imports/';
-                $upload_success = Input::file('zipfile')->move($destinationPath, "archivo_zip.zip");
-                exec('unzip -P S3CR3T0 '.$destinationPath.'archivo_zip.zip -d '.$destinationPath);
+                $upload_success = Input::file('zipfile')->move($destinationPath, 'archivo_zip.zip');
 
-                $str = file_get_contents($destinationPath.'acta.json');
-                $json = json_decode($str, true);
+                $zip = new ZipArchive;
+                $res = $zip->open($destinationPath.'archivo_zip.zip');
+                if ($res === TRUE) {
+                    $zip->extractTo($destinationPath);
+                    $zip->close();
+                } else {
+                    return Response::json(['error' => 'No se pudo extraer el archivo'], HttpResponse::HTTP_CONFLICT);
+                }
+
+                //exec('unzip -P S3CR3T0 '.$destinationPath.'archivo_zip.zip -d '.$destinationPath);
+
+                $filename = $destinationPath . 'acta.json';
+                $handle = fopen($filename, "r");
+                $contents = fread($handle, filesize($filename));
+                $DecryptedData=$this->decryptData($contents);
+                fclose($handle);
+                
+                //$str = file_get_contents($destinationPath.'acta.json');
+                $json = json_decode($DecryptedData, true);
 
                 $v = Validator::make($json, $reglas_acta, $mensajes);
                 if ($v->fails()) {

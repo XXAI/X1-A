@@ -25,6 +25,7 @@ class CrearTablaRequisiciones extends Migration
             $table->decimal('gran_total',15,2);
             $table->decimal('iva',5,2);
             $table->string('firma_solicita',255);
+            $table->string('cargo_solicita',255);
             $table->string('firma_director',255);
             $table->integer('estatus')->length(1);
             $table->timestamps();
