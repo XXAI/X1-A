@@ -55,7 +55,7 @@ class ActaController extends Controller
     }
 
     function decryptData($value){
-       $key = "289374DSFA2";
+       $key = "1C6B37CFCDF98AB8FA29E47E4B8EF1F3";
        $crypttext = $value;
        $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
        $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
@@ -151,7 +151,13 @@ class ActaController extends Controller
                         return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
                     }
 
+                    $max_requisicion = Requisicion::max('numero');
+                    if(!$max_requisicion){
+                        $max_requisicion = 0;
+                    }
+                    $inputs_requisicion['numero'] = $max_requisicion+1;
                     $inputs_requisicion['empresa_clave'] = $inputs_requisicion['empresa'];
+
                     $requisicion = $acta->requisiciones()->create($inputs_requisicion);
 
                     if(isset($inputs_requisicion['insumos'])){

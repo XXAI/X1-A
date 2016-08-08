@@ -189,16 +189,16 @@
 				<th class="encabezado-tabla">{{$requisicion->pedido}}</th>
 			</tr>
 			<tr class="tabla-datos">
-				<th colspan="2" class="encabezado-tabla fondo-titulo">PROVEEDOR ADJUDICADO</th>
-				<th colspan="3" class="encabezado-tabla"></th>
-				<th class="encabezado-tabla fondo-titulo">No. DE REQUISICIÓN DE</th>
-				<th class="encabezado-tabla">{{$requisicion->numero}}</th>
+				<th class="encabezado-tabla fondo-titulo">PROVEEDOR ADJUDICADO</th>
+				<th colspan="2" class="encabezado-tabla"></th>
+				<th class="encabezado-tabla fondo-titulo">No. DE REQUISICIÓN</th>
+				<th colspan="3" class="encabezado-tabla">{{$requisicion->numero}}</th>
 			</tr>
 			<tr class="tabla-datos">
-				<th colspan="2" class="encabezado-tabla fondo-titulo">LUGAR DE ENTREGA</th>
-				<th colspan="3" class="encabezado-tabla"></th>
+				<th class="encabezado-tabla fondo-titulo">LUGAR DE ENTREGA</th>
+				<th colspan="2" class="encabezado-tabla"></th>
 				<th class="encabezado-tabla fondo-titulo">CONDICIONES DE PAGO</th>
-				<th class="encabezado-tabla"></th>
+				<th colspan="3" class="encabezado-tabla"> 20 días naturales contados a partir de la recepción de la factura original, debidamente requisitada y previa validación de la unidad aplicativa a entera satisfacción de las mismas. Las facturas deberán presentarse a la Dirección de Atención Médica, mismas que enviaran a la Subdirección de Recursos Materiales y Servicios Generales para realizar el trámite correspondiente para este fin, conforme a la fuente de Financiamiento correspondiente.</th>
 			</tr>
 		</tbody>
 		<thead>

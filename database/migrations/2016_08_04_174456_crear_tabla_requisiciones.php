@@ -23,7 +23,7 @@ class CrearTablaRequisiciones extends Migration
             $table->integer('dias_surtimiento')->length(10);
             $table->decimal('sub_total',15,2);
             $table->decimal('gran_total',15,2);
-            $table->decimal('iva',5,2);
+            $table->decimal('iva',15,2);
             $table->string('firma_solicita',255);
             $table->string('cargo_solicita',255);
             $table->string('firma_director',255);

@@ -15,9 +15,9 @@
 			left: 105px;
 			transform: rotate(45deg);
 			transform-origin: 50% 50%;
-			opacity: .3;
+			opacity: .5;
 			font-size: 120px;
-			color: lightgrey;
+			color: grey;
 			width: 480px;
 			text-align: center;
 		}
@@ -220,7 +220,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="2" class="encabezado-tabla texto-derecha">IVA</th>
-				<td class="encabezado-tabla">SI IVA</td>
+				<td class="encabezado-tabla">{{($requisicion->tipo_requisicion==3)?'$ '.number_format($requisicion->iva,2):'SIN IVA'}}</td>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="2" class="encabezado-tabla texto-derecha">GRAN TOTAL</th>
