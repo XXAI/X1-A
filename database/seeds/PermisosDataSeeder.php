@@ -32,6 +32,21 @@ class PermisosDataSeeder extends Seeder
 	            'clave' => 'FDB1C17AAF43A',
 	            'descripcion' => 'Permite crear/editar/eliminar nuevos roles del sistema.',
 	            'grupo' => 'ADMIN'
+			],
+			[
+				'clave'			=> '86BBF4AA1A948',
+				'descripcion'	=> 'Listar las Actas',
+				'grupo'			=> 'CAPTURA'
+			],
+			[
+				'clave'			=> '2DDA5B8933685',
+				'descripcion'	=> 'Listar las Requisiciones',
+				'grupo'			=> 'CAPTURA'
+			],
+			[
+				'clave'			=>'D9B1342FA3DF3',
+				'descripcion'	=> 'Listar los Pedidos',
+				'grupo'			=> 'CAPTURA'
 			]
         ]);
     }

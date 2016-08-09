@@ -32,6 +32,7 @@ class RequisicionController extends Controller
             $filtro = Input::get('filtro');
 
             $recurso = Requisicion::leftjoin('actas','actas.id','=','requisiciones.acta_id')
+                                    ->leftjoin('clues','clues.clues','=','actas.clues')
                                     ->where('requisiciones.estatus','>=',1);
 
             if($query){
@@ -46,7 +47,8 @@ class RequisicionController extends Controller
 
             $totales = $recurso->count();
             
-            $recurso = $recurso->select('actas.folio','actas.clues','requisiciones.*')
+            $recurso = $recurso->select('actas.folio','actas.clues','clues.nombre AS clues_nombre',
+                                        'requisiciones.*')
                                 ->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
                                 ->orderBy('id','desc')->get();
 
