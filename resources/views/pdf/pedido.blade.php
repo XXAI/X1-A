@@ -157,7 +157,7 @@
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla texto-justificado" rowspan="4">
 					<p>
-					FUNDAMENTO LEGAL: CLAUSULA SEGUNDA NUMERALES VIII párrafos primero y segundo Y IX ultimo parrafo del contrato contraido con la empresa {{$empresa}} que a la letra dice:…
+					FUNDAMENTO LEGAL: CLAUSULA SEGUNDA NUMERALES VIII párrafos primero y segundo Y IX ultimo parrafo del contrato contraido con la empresa {{$empresa->nombre}} que a la letra dice:…
 					</p>
 					<p>
 					“SEGUNDA. &quot;EL PROVEEDOR&quot; se obliga a lo siguiente:…”
@@ -178,11 +178,11 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">PARTIDA PRESUPUESTAL:</th>
-				<th class="encabezado-tabla"></th>
+				<th class="encabezado-tabla">{{$empresa->partida_presupuestal}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">EMPRESA ADJUDICADA EN LICITACIÓN</th>
-				<th class="encabezado-tabla"></th>
+				<th class="encabezado-tabla">{{$empresa->nombre}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">NÚMERO DE PEDIDO ADJUDICADO EN LICITACIÓN</th>
@@ -196,7 +196,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">LUGAR DE ENTREGA</th>
-				<th colspan="2" class="encabezado-tabla"></th>
+				<th colspan="2" class="encabezado-tabla">{{$requisicion->acta->lugar_entrega}}</th>
 				<th class="encabezado-tabla fondo-titulo">CONDICIONES DE PAGO</th>
 				<th colspan="3" class="encabezado-tabla"> 20 días naturales contados a partir de la recepción de la factura original, debidamente requisitada y previa validación de la unidad aplicativa a entera satisfacción de las mismas. Las facturas deberán presentarse a la Dirección de Atención Médica, mismas que enviaran a la Subdirección de Recursos Materiales y Servicios Generales para realizar el trámite correspondiente para este fin, conforme a la fuente de Financiamiento correspondiente.</th>
 			</tr>
@@ -238,7 +238,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo" >I.V.A.</th>
-				<th class="encabezado-tabla" ></th>
+				<th class="encabezado-tabla">{{($requisicion->tipo_requisicion==3)?'$ '.number_format($requisicion->iva,2):'SIN IVA'}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo" >T O T A L</th>

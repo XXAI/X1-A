@@ -238,7 +238,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla texto-justificado" colspan="7">
-					LUGAR DE ENTREGA: almacen del Hospital General Palenque de Lunes a Viernes en horario de 9:00 am a 3:30 pm.
+					LUGAR DE ENTREGA: {{$requisicion->acta->lugar_entrega}}
 				</th>
 			</tr>
 			<tr class="tabla-datos">

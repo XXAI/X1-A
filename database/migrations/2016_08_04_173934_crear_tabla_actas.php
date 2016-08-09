@@ -21,6 +21,7 @@ class CrearTablaActas extends Migration
             $table->time('hora_inicio');
             $table->time('hora_termino');
             $table->string('lugar_reunion',255);
+            $table->string('lugar_entrega',255);
             $table->string('empresa_clave',45);
             $table->integer('estatus')->length(1);
             $table->timestamps();

@@ -8,6 +8,7 @@ use Illuminate\Http\Response as HttpResponse;
 use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
 
@@ -69,14 +70,23 @@ class PedidoController extends Controller
 
     public function generarPedidoPDF($id){
         $data = [];
-        $data['requisicion'] = Requisicion::with('acta','insumos')->find($id);
+        $data['requisicion'] = Requisicion::with('acta')->find($id);
 
         if(!$data['requisicion']->estatus){
             return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
         }
 
         $data['unidad'] = $data['requisicion']->acta->clues;
-        $data['empresa'] = $data['requisicion']->acta->empresa_clave;
+        $data['empresa'] = Empresa::where('pedido','=',$data['requisicion']->pedido)
+                                    ->where('clave','=',$data['requisicion']->empresa_clave)->first();
+
+        $empresa_clave = $data['empresa']->clave;
+        $data['requisicion']->load(['insumos'=>function($query)use($empresa_clave){
+            $query->select('id','pedido_'.$empresa_clave.' AS pedido','requisicion','lote','clave','descripcion' ,'marca_'.$empresa_clave.' AS marca','unidad','insumos.cantidad','precio_'.$empresa_clave.' AS precio','tipo','cause');
+        }]);
+
+        
+        //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
 
         $pdf = PDF::loadView('pdf.pedido', $data);
 
