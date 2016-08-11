@@ -9,6 +9,7 @@ use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
 use App\Models\Empresa;
+use App\Models\UnidadMedica;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
 
@@ -75,6 +76,7 @@ class RequisicionController extends Controller
         $data['requisicion'] = Requisicion::with('acta')->find($id);
         $data['empresa'] = Empresa::where('pedido','=',$data['requisicion']->pedido)
                                     ->where('clave','=',$data['requisicion']->empresa_clave)->first();
+        $data['unidad'] = UnidadMedica::where('clues',$data['requisicion']->acta->clues)->first();
 
         $empresa_clave = $data['empresa']->clave;
         $data['requisicion']->load(['insumos'=>function($query)use($empresa_clave){
@@ -84,7 +86,7 @@ class RequisicionController extends Controller
             return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
         }
 
-        $data['unidad'] = $data['requisicion']->acta->clues;
+        //$data['unidad'] = $data['requisicion']->acta->clues;
         //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
 
         $pdf = PDF::loadView('pdf.requisicion', $data);

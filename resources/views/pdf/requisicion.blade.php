@@ -17,7 +17,7 @@
 			transform-origin: 50% 50%;
 			opacity: .5;
 			font-size: 120px;
-			color: grey;
+			color: #DEDEDE;
 			width: 480px;
 			text-align: center;
 		}
@@ -179,7 +179,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<td class="encabezado-tabla">No. {{$requisicion->numero}}</td>
-				<td class="encabezado-tabla">{{$unidad}}</td>
+				<td class="encabezado-tabla">{{$unidad->nombre}}</td>
 				<td class="encabezado-tabla">{{$requisicion->pedido}}</td>
 				<td class="encabezado-tabla">{{$requisicion->lotes}}</td>
 				<td class="encabezado-tabla">{{$empresa->nombre}}</td>
