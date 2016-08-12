@@ -21,6 +21,41 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request){
+
+        try{
+            //DB::enableQueryLog();
+            $elementos_por_pagina = 50;
+            $pagina = Input::get('pagina');
+            if(!$pagina){
+                $pagina = 1;
+            }
+
+            $query = Input::get('query');
+            $filtro = Input::get('filtro');
+
+            $recurso = Acta::getModel();
+
+            if($query){
+                $recurso = $recurso->where(function($condition)use($query){
+                    $condition->where('folio','LIKE','%'.$query.'%')
+                            ->orWhere('clues','LIKE','%'.$query.'%')
+                            ->orWhere('lugar_reunion','LIKE','%'.$query.'%')
+                            ->orWhere('ciudad','LIKE','%'.$query.'%');
+                });
+            }
+
+            $totales = $recurso->count();
+            
+            $recurso = $recurso->with('UnidadMedica')->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
+                                ->orderBy('id','desc')->get();
+
+            //$queries = DB::getQueryLog();
+            //$last_query = end($queries);
+            return Response::json(['data'=>$recurso,'totales'=>$totales],200);
+        }catch(Exception $ex){
+            return Response::json(['error'=>$e->getMessage()],500);
+        }
+        /*
         try{
             //DB::enableQueryLog();
             $elementos_por_pagina = 50;
@@ -59,6 +94,7 @@ class RequisicionController extends Controller
         }catch(Exception $ex){
             return Response::json(['error'=>$e->getMessage()],500);
         }
+        */
     }
 
     /**
@@ -68,7 +104,8 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        return Response::json([ 'data' => Requisicion::with('acta','insumos')->find($id) ],200);
+        //return Response::json([ 'data' => Requisicion::with('acta','insumos')->find($id) ],200);
+        return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id) ],200);
     }
 
     public function generarRequisicionPDF($id){

@@ -80,6 +80,7 @@ class ActaController extends Controller
 
         $reglas_acta = [
             'folio'             =>'required|unique:actas',
+            'numero'            =>'required',
             'empresa'           =>'required',
             'ciudad'            =>'required',
             'fecha'             =>'required',
@@ -118,9 +119,7 @@ class ActaController extends Controller
                 } else {
                     return Response::json(['error' => 'No se pudo extraer el archivo'], HttpResponse::HTTP_CONFLICT);
                 }
-
-                //exec('unzip -P S3CR3T0 '.$destinationPath.'archivo_zip.zip -d '.$destinationPath);
-
+                
                 $filename = $destinationPath . 'acta.json';
                 $handle = fopen($filename, "r");
                 $contents = fread($handle, filesize($filename));
@@ -142,6 +141,9 @@ class ActaController extends Controller
 
                 DB::beginTransaction();
 
+                $json['firma_solicita'] = $json['requisiciones'][0]['firma_solicita'];
+                $json['cargo_solicita'] = $json['requisiciones'][0]['cargo_solicita'];
+
                 $acta = Acta::create($json);
 
                 foreach ($json['requisiciones'] as $inputs_requisicion) {
@@ -151,11 +153,11 @@ class ActaController extends Controller
                         return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
                     }
 
-                    $max_requisicion = Requisicion::max('numero');
-                    if(!$max_requisicion){
-                        $max_requisicion = 0;
-                    }
-                    $inputs_requisicion['numero'] = $max_requisicion+1;
+                    //$max_requisicion = Requisicion::max('numero');
+                    //if(!$max_requisicion){
+                        //$max_requisicion = 0;
+                    //}
+                    //$inputs_requisicion['numero'] = $max_requisicion+1;
                     $inputs_requisicion['empresa_clave'] = $inputs_requisicion['empresa'];
 
                     $requisicion = $acta->requisiciones()->create($inputs_requisicion);
@@ -245,118 +247,4 @@ class ActaController extends Controller
         $pdf = PDF::loadView('pdf.requisiciones', $data);
         return $pdf->stream($data['acta']->folio.'Requisiciones.pdf');
     }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    /*
-    public function update(Request $request, $id){
-        $mensajes = [
-            'required'      => "required",
-            'unique'        => "unique",
-            'date'          => "date"
-        ];
-        try {
-
-            DB::beginTransaction();
-
-            $acta = Acta::find($id);
-
-            if($acta->estatus == 2){
-                throw new \Exception("El Acta no se puede editar ya que se encuentra con estatus de finalizada");
-            }
-
-            $acta->update($inputs);
-
-            if(isset($inputs['requisiciones'])){
-                if(count($inputs['requisiciones']) > 3){
-                    throw new \Exception("No pueden haber mas de tres requesiciones por acta");
-                }
-
-                $acta->load('requisiciones');
-                $requisiciones_guardadas = [];
-                foreach ($inputs['requisiciones'] as $inputs_requisicion) {
-                    $v = Validator::make($inputs_requisicion, $reglas_requisicion, $mensajes);
-                    if ($v->fails()) {
-                        DB::rollBack();
-                        return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
-                    }
-
-                    if(isset($inputs_requisicion['id'])){
-                        $requisicion = Requisicion::find($inputs_requisicion['id']);
-                        $requisicion->update($inputs_requisicion);
-                        $requisiciones_guardadas[$requisicion->id] = true;
-                    }else{
-                        $max_requisicion = Requisicion::where('tipo_requisicion',$inputs_requisicion['tipo_requisicion'])->max('numero');
-                        if(!$max_requisicion){
-                            $max_requisicion = 0;
-                        }
-                        $inputs_requisicion['numero'] = $max_requisicion+1;
-                        $inputs_requisicion['acta_id'] = $acta->id;
-                        $inputs_requisicion['empresa'] = env('EMPRESA');
-                        $requisicion = Requisicion::create($inputs_requisicion);
-                    }
-
-                    if(isset($inputs_requisicion['insumos'])){
-                        $insumos = [];
-                        foreach ($inputs_requisicion['insumos'] as $req_insumo) {
-                            $insumos[] = [
-                                'insumo_id' => $req_insumo['insumo_id'],
-                                'cantidad' => $req_insumo['cantidad'],
-                                'total' => $req_insumo['total']
-                            ];
-                        }
-                        $requisicion->insumos()->sync($insumos);
-                    }else{
-                        $requisicion->insumos()->sync([]);
-                    }
-                }
-                $eliminar_requisiciones = [];
-                foreach ($acta->requisiciones as $requisicion) {
-                    if(!isset($requisiciones_guardadas[$requisicion->id])){
-                        $eliminar_requisiciones[] = $requisicion->id;
-                        $requisicion->insumos()->sync([]);
-                    }
-                }
-                if(count($eliminar_requisiciones)){
-                    Requisicion::whereIn('id',$eliminar_requisiciones)->delete();
-                }
-            }
-
-            DB::commit();
-
-            return Response::json([ 'data' => $acta ],200);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
-        }
-    }
-    */
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    /*
-    public function destroy($id){
-        try {
-            $acta = Acta::with('requisiciones')->find($id);
-            foreach ($acta->requisiciones as $requisicion) {
-                $requisicion->insumos()->sync([]);
-            }
-            Requisicion::where('acta_id',$id)->delete();
-            Acta::destroy($id);
-            return Response::json(['data'=>'Elemento eliminado con exito'],200);
-        } catch (Exception $e) {
-           return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
-        }
-    }
-    */
 }
