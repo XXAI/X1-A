@@ -20,7 +20,8 @@ class DatabaseSeeder extends Seeder {
 	    $this->call(EmpresasDataSeeder::class);
 	    $this->call(ConfiguracionDataSeeder::class);
 	    $this->call(InsumosSeeder::class);
-	    
+	    $this->call(CluesSeeder::class);
+
 	    Model::reguard();
 	}
 

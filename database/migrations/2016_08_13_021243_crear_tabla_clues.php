@@ -16,8 +16,6 @@ class CrearTablaClues extends Migration
             $table->increments('id');
             $table->string('clues',12);
             $table->string('nombre',255);
-
-            $table->timestamps();
         });
     }
 
