@@ -17,8 +17,10 @@ class CrearTablaActas extends Migration
             $table->string('clues',12);
             $table->integer('numero')->length(10)->nullable();
             $table->string('folio',100);
+            $table->integer('num_oficio')->length(10)->nullable();
             $table->string('ciudad',255);
             $table->date('fecha');
+            $table->date('fecha_solicitud')->nullable();
             $table->time('hora_inicio');
             $table->time('hora_termino');
             $table->string('lugar_reunion',255);

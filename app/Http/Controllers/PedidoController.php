@@ -82,7 +82,7 @@ class PedidoController extends Controller
 
         $empresa_clave = $data['empresa']->clave;
         $data['requisicion']->load(['insumos'=>function($query)use($empresa_clave){
-            $query->select('id','pedido_'.$empresa_clave.' AS pedido','requisicion','lote','clave','descripcion' ,'marca_'.$empresa_clave.' AS marca','unidad','insumos.cantidad','precio_'.$empresa_clave.' AS precio','tipo','cause');
+            $query->select('id','pedido','requisicion','lote','clave','descripcion' ,'marca','unidad','insumos.cantidad','precio','tipo','cause')->where('proveedor',$empresa_clave);
         }]);
 
         

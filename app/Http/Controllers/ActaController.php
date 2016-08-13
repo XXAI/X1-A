@@ -158,7 +158,10 @@ class ActaController extends Controller
                         //$max_requisicion = 0;
                     //}
                     //$inputs_requisicion['numero'] = $max_requisicion+1;
-                    $inputs_requisicion['empresa_clave'] = $inputs_requisicion['empresa'];
+                    //$inputs_requisicion['empresa_clave'] = $inputs_requisicion['empresa'];
+                    $inputs_requisicion['sub_total_validado'] = $inputs_requisicion['sub_total'];
+                    $inputs_requisicion['gran_total_validado'] = $inputs_requisicion['gran_total'];
+                    $inputs_requisicion['iva_validado'] = $inputs_requisicion['iva'];
 
                     $requisicion = $acta->requisiciones()->create($inputs_requisicion);
 
@@ -246,5 +249,77 @@ class ActaController extends Controller
 
         $pdf = PDF::loadView('pdf.requisiciones', $data);
         return $pdf->stream($data['acta']->folio.'Requisiciones.pdf');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update($id){
+        $mensajes = [
+            'required'      => "required",
+            'array'         => "array",
+            'min'           => "min",
+            'unique'        => "unique",
+            'date'          => "date"
+        ];
+
+        $reglas_acta = [
+            'num_oficio'        =>'required|unique:actas,num_oficio,'.$id,
+            'fecha_solicitud'   =>'required|date',
+            'lugar_entrega'     =>'required',
+            'estatus'           =>'required'
+        ];
+
+        //$inputs = Input::all();
+
+        try {
+
+            $inputs = Input::all();
+
+            $v = Validator::make($inputs, $reglas_acta, $mensajes);
+            if ($v->fails()) {
+                return Response::json(['error' => $v->errors(), 'error_type'=>'form_validation'], HttpResponse::HTTP_CONFLICT);
+            }
+
+            $acta = Acta::find($id);
+
+            if($acta->estatus >= 3){
+                throw new \Exception("El Acta no se puede editar ya que se encuentra con estatus de enviada");
+            }
+
+            if($inputs['estatus'] == 3){
+                $acta->estatus = 3;
+                $acta->load('requisiciones');
+                $validados = 0;
+                $requisiciones = count($acta->requisiciones);
+                foreach ($acta->requisiciones as $requisicion) {
+                    if($requisicion->estatus === 1){
+                        $validados++;
+                    }
+                }
+                if($validados != $requisiciones){
+                    return Response::json(['error' => 'Se necesita validar todas las requisiciones asignadas.', 'error_type'=>'data_validation'], HttpResponse::HTTP_CONFLICT);
+                }
+            }
+
+            DB::beginTransaction();
+
+            $acta->num_oficio = $inputs['num_oficio'];
+            $acta->lugar_entrega = $inputs['lugar_entrega'];
+            $acta->fecha_solicitud = $inputs['fecha_solicitud'];
+
+            if(!$acta->save()){
+                throw new Exception("Ocurrió un error al intenar guardar los datos del acta", 1);
+            }
+
+            DB::commit();
+            return Response::json([ 'data' => $acta ],200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+        }
     }
 }

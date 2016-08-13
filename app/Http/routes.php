@@ -110,7 +110,7 @@ Route::post('/signin', function () {
 });
 
 Route::group([ 'prefix' => 'v1'], function () {
-    Route::get('requisicion-pdf/{id}',    'RequisicionController@generarRequisicionPDF');
+    Route::get('solicitudes-pdf/{id}',    'RequisicionController@generarSolicitudesPDF');
     Route::get('pedido-pdf/{id}',    'PedidoController@generarPedidoPDF');
     
     Route::group(['middleware' => 'oauth'], function(){

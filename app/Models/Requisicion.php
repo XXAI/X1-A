@@ -7,7 +7,7 @@ use \DB;
 
 class Requisicion extends Model {
 	protected $table = 'requisiciones';
-	protected $fillable = ['acta_id', 'numero', 'pedido', 'lotes', 'tipo_requisicion', 'dias_surtimiento', 'sub_total', 'gran_total', 'iva'];
+	protected $fillable = ['acta_id', 'numero', 'pedido', 'lotes', 'tipo_requisicion', 'dias_surtimiento', 'sub_total', 'gran_total', 'iva', 'sub_total_validado', 'gran_total_validado', 'iva_validado'];
 
 	public function acta(){
         return $this->hasOne('App\Models\Acta','id','acta_id');

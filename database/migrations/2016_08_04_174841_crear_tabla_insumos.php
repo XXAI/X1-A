@@ -14,20 +14,21 @@ class CrearTablaInsumos extends Migration
     {
         Schema::create('insumos', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('pedido_disur',15)->nullable();
-            $table->string('pedido_exfarma',15)->nullable();
+            $table->string('llave',50)->nullable();
+            $table->string('proveedor',50)->nullable();
+            $table->string('pedido',15)->nullable();
             $table->string('requisicion',10)->nullable();
             $table->integer('lote')->nullable();
             $table->string('clave',20)->nullable();
             $table->text('descripcion')->nullable();
-            $table->string('marca_disur',255)->nullable();
-            $table->string('marca_exfarma',255)->nullable();
+            $table->string('marca',255)->nullable();
             $table->string('unidad',255)->nullable();
             $table->integer('cantidad')->nullable();
-            $table->decimal('precio_disur',13,2)->nullable();
-            $table->decimal('precio_exfarma',13,2)->nullable();
+            $table->decimal('precio',13,2)->nullable();
             $table->integer('tipo')->length(1)->nullable();
-            $table->integer('cause')->length(1)->nullable();
+            $table->integer('cause')->length(1)->default(0);
+
+            $table->index('clave'); 
         });
     }
 

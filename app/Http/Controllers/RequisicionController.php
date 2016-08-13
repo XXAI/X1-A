@@ -10,6 +10,7 @@ use App\Models\Acta;
 use App\Models\Requisicion;
 use App\Models\Empresa;
 use App\Models\UnidadMedica;
+use App\Models\Configuracion;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
 
@@ -46,7 +47,9 @@ class RequisicionController extends Controller
 
             $totales = $recurso->count();
             
-            $recurso = $recurso->with('UnidadMedica')->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
+            $recurso = $recurso->with('UnidadMedica','requisiciones')
+                                ->skip(($pagina-1)*$elementos_por_pagina)
+                                ->take($elementos_por_pagina)
                                 ->orderBy('id','desc')->get();
 
             //$queries = DB::getQueryLog();
@@ -108,25 +111,37 @@ class RequisicionController extends Controller
         return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id) ],200);
     }
 
-    public function generarRequisicionPDF($id){
+    public function generarSolicitudesPDF($id){
         $data = [];
-        $data['requisicion'] = Requisicion::with('acta')->find($id);
-        $data['empresa'] = Empresa::where('pedido','=',$data['requisicion']->pedido)
-                                    ->where('clave','=',$data['requisicion']->empresa_clave)->first();
-        $data['unidad'] = UnidadMedica::where('clues',$data['requisicion']->acta->clues)->first();
+        $acta = Acta::with('requisiciones')->find($id);
 
-        $empresa_clave = $data['empresa']->clave;
-        $data['requisicion']->load(['insumos'=>function($query)use($empresa_clave){
-            $query->select('id','pedido_'.$empresa_clave.' AS pedido','requisicion','lote','clave','descripcion' ,'marca_'.$empresa_clave.' AS marca','unidad','insumos.cantidad','precio_'.$empresa_clave.' AS precio','tipo','cause');
+        $data['acta'] = $acta;
+        $empresas = Empresa::where('clave','=',$acta->empresa_clave)->get();
+
+        $data['empresa'] = [
+            'nombre' => $empresas[0]->nombre,
+            'clave' => $empresas[0]->clave,
+            'partidas' => $empresas->lists('partida_presupuestal','pedido')
+        ];
+
+        $data['configuracion'] = Configuracion::find(1);
+
+        $data['unidad'] = UnidadMedica::where('clues',$acta->clues)->first();
+
+        $empresa_clave = $data['empresa']['clave'];
+        $acta->requisiciones->load(['insumos'=>function($query)use($empresa_clave){
+            $query->select('id','pedido','requisicion','lote','clave','descripcion' ,'marca','unidad','precio',
+                            'tipo','cause')->where('proveedor',$empresa_clave);
         }]);
-        if(!$data['requisicion']->estatus){
+
+        /*if(!$acta->estatus){
             return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
-        }
+        }*/
 
         //$data['unidad'] = $data['requisicion']->acta->clues;
         //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
 
-        $pdf = PDF::loadView('pdf.requisicion', $data);
+        $pdf = PDF::loadView('pdf.solicitudes', $data);
         /*
         if($data['requisicion']->estatus == 1){
             $pdf->output();
@@ -137,7 +152,7 @@ class RequisicionController extends Controller
             $canvas->page_text(20, $h - 600, "SIN VALIDAR", Font_Metrics::get_font("arial", "bold"),85, array(0.85, 0.85, 0.85));
         }
         */
-        return $pdf->stream('Requisicion-'.$data['requisicion']->acta->folio.'-'.$data['requisicion']->tipo_requisicion.'-'.$data['requisicion']->numero.'.pdf');
+        return $pdf->stream('Solicitudes-'.$acta->folio.'.pdf');
     }
 
     /**
@@ -157,17 +172,22 @@ class RequisicionController extends Controller
 
             DB::beginTransaction();
 
-            $requisicion = Requisicion::find($id);
+            $requisicion = Requisicion::with('acta')->find($id);
 
             if($requisicion->estatus == 2){
                 throw new \Exception("La Requisición no se puede editar ya que se encuentra con estatus de enviada");
             }
 
+            if($requisicion->acta->estatus >= 3){
+                throw new \Exception("La Requisición no se puede editar ya que el acta se encuentra con estatus de enviada");
+            }
+
             $requisicion->estatus = Input::get('estatus');
             
             if($requisicion->estatus == 1){
-                $requisicion->sub_total = Input::get('sub_total');
-                $requisicion->gran_total = Input::get('gran_total');
+                $requisicion->sub_total_validado = Input::get('sub_total');
+                $requisicion->iva_validado = Input::get('iva');
+                $requisicion->gran_total_validado = Input::get('gran_total');
             }
 
             if($requisicion->save()){

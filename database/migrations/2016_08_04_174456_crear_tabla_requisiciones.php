@@ -18,15 +18,14 @@ class CrearTablaRequisiciones extends Migration
             $table->integer('numero')->length(10)->nullable();
             $table->string('pedido',15);
             $table->string('lotes',255);
-            //$table->string('empresa_clave',45);
             $table->integer('tipo_requisicion')->length(1);
             $table->integer('dias_surtimiento')->length(10);
             $table->decimal('sub_total',15,2);
             $table->decimal('gran_total',15,2);
             $table->decimal('iva',15,2);
-            //$table->string('firma_solicita',255);
-            //$table->string('cargo_solicita',255);
-            //$table->string('firma_director',255)->nullable();
+            $table->decimal('sub_total_validado',15,2);
+            $table->decimal('gran_total_validado',15,2);
+            $table->decimal('iva_validado',15,2);
             $table->integer('estatus')->length(1)->nullable();
             $table->timestamps();
         });

@@ -13,9 +13,9 @@ class ConfiguracionDataSeeder extends Seeder
     {
         DB::table('configuracion')->insert([
 			[
-				'cargo_solitante_requisicion'	=> 'Coordinador de abasto',
-				'director_atencion_medica'	=> 'DRA. LETICIA GUADALUPE MONTOYA LIÉVANO',
-				'jefe_recursos_materiales'	=> 'LIC. GABRIEL FLORES CANCINO',
+				'coordinador_abasto'	            => 'DR. LUIS JOSÉ MANCILLA VELAZQUEZ',
+				'director_atencion_medica'	        => 'DRA. LETICIA GUADALUPE MONTOYA LIÉVANO',
+				'jefe_recursos_materiales'	        => 'LIC. GABRIEL FLORES CANCINO',
 				'subdirector_recursos_materiales'	=> 'C.P. EDUARDO HERNANDEZ AMADOR',
 				'director_administracion_finanzas'	=> 'LIC. JAIRO CESAR GUILLEN RAMIREZ'
 			]
