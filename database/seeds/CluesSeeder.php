@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Database\Seeder;
+use \DB as DB;
 
 class CluesSeeder extends Seeder
 {

@@ -26,6 +26,6 @@ class CrearTablaClues extends Migration
      */
     public function down()
     {
-        //
+        Schema::drop('clues');
     }
 }
