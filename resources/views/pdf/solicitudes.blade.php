@@ -150,7 +150,7 @@
 	<div id="watermark">SIN VALIDEZ</div>
 	@endif
 @foreach($acta->requisiciones as $index => $requisicion)
-	@if($index>0)
+	@if($index > 0)
 	<div style="page-break-after:always;"></div>
 	@endif
 	<table width="100%">
@@ -208,10 +208,10 @@
 		</thead>
 		<tbody>
 		@foreach($requisicion->insumos as $indice => $insumo)
-			<tr class="tabla-datos">
+			<tr class="tabla-datos" style="page-break-inside:avoid;">
 				<td class="encabezado-tabla">{{$insumo->lote}}</td>
 				<td class="encabezado-tabla">{{$insumo->clave}}</td>
-				<td class="encabezado-tabla">{{$insumo->descripcion}}</td>
+				<td class="encabezado-tabla"><small>{{$insumo->descripcion}}</small></td>
 				<td class="encabezado-tabla">{{number_format($insumo->pivot->cantidad_aprovada)}}</td>
 				<td class="encabezado-tabla">{{$insumo->unidad}}</td>
 				<td class="encabezado-tabla">$ {{number_format($insumo->precio,2)}}</td>
