@@ -155,6 +155,44 @@ class RequisicionController extends Controller
         return $pdf->stream('Solicitudes-'.$acta->folio.'.pdf');
     }
 
+    public function generarOficioPDF($id){
+        $meses = ['01'=>'Enero','02'=>'Febrero','03'=>'Marzo','04'=>'Abril','05'=>'Mayo','06'=>'Junio','07'=>'Julio','08'=>'Agosto','09'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre'];
+        $data = [];
+        $data['acta'] = Acta::with('requisiciones')->find($id);
+        
+        $fecha = explode('-',$data['acta']->fecha_solicitud);
+        $fecha[1] = $meses[$fecha[1]];
+        $data['acta']->fecha_solicitud = $fecha;
+
+        $data['empresa'] = Empresa::where('clave','=',$data['acta']->empresa_clave)->first();
+        $data['configuracion'] = Configuracion::find(1);
+        $data['unidad'] = UnidadMedica::where('clues',$data['acta']->clues)->first();
+
+        $pedidos = $data['acta']->requisiciones->lists('pedido')->toArray();
+        $numeros = $data['acta']->requisiciones->lists('numero')->toArray();
+        if(count($pedidos) == 1){
+            $data['acta']->requisiciones = $pedidos[0];
+            $data['acta']->numeros       = $numeros[0];
+        }elseif(count($pedidos) == 2){
+            $data['acta']->requisiciones = $pedidos[0] . ' y ' . $pedidos[1];
+            $data['acta']->numeros       = $numeros[0] . ' y ' . $numeros[1];
+        }else{
+            $data['acta']->requisiciones = $pedidos[0] . ', ' . $pedidos[1] . ' y ' . $pedidos[2];
+            $data['acta']->numeros       = $numeros[0] . ', ' . $numeros[1] . ' y ' . $numeros[2];
+        }
+        //$data['acta']->requisiciones = implode(', ', $pedidos);
+        
+        $pdf = PDF::loadView('pdf.oficio', $data);
+        $pdf->output();
+        $dom_pdf = $pdf->getDomPDF();
+        $canvas = $dom_pdf->get_canvas();
+        $w = $canvas->get_width();
+        $h = $canvas->get_height();
+        $canvas->page_text(($w/2)-10, ($h-100), "{PAGE_NUM}/{PAGE_COUNT}", null, 10, array(0, 0, 0));
+        
+        return $pdf->stream($data['acta']->folio.'-Acta.pdf');
+    }
+
     /**
      * Update the specified resource in storage.
      *

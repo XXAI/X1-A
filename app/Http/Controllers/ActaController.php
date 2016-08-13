@@ -79,15 +79,19 @@ class ActaController extends Controller
         ];
 
         $reglas_acta = [
-            'folio'             =>'required|unique:actas',
-            'numero'            =>'required',
-            'empresa'           =>'required',
-            'ciudad'            =>'required',
-            'fecha'             =>'required',
-            'hora_inicio'       =>'required',
-            'hora_termino'      =>'required',
-            'lugar_reunion'     =>'required',
-            'requisiciones'     =>'required|array|min:1'
+            'folio'                         => 'required|unique:actas',
+            'numero'                        => 'required',
+            'empresa'                       => 'required',
+            'ciudad'                        => 'required',
+            'fecha'                         => 'required',
+            'hora_inicio'                   => 'required',
+            'hora_termino'                  => 'required',
+            'lugar_reunion'                 => 'required',
+            'requisiciones'                 => 'required|array|min:1',
+            'director_unidad'               => 'required',
+            'administrador'                 => 'required'
+            //'encargado_almacen'             => 'required',
+            //'coordinador_comision_abasto'   => 'required'
         ];
 
         $reglas_requisicion = [
@@ -98,17 +102,16 @@ class ActaController extends Controller
             'dias_surtimiento'  =>'required',
             'sub_total'         =>'required',
             'gran_total'        =>'required',
-            'iva'               =>'required',
-            'firma_solicita'    =>'required',
-            'firma_director'    =>'required'
+            'iva'               =>'required'
         ];
 
         //$inputs = Input::all();
 
         try {
             if(Input::hasFile('zipfile')){
-
-                $destinationPath = storage_path().'/app/imports/';
+                $user_email = $request->header('X-Usuario');
+                $user_email = str_replace('@','_',$user_email);
+                $destinationPath = storage_path().'/app/imports/'.$user_email.'/';
                 $upload_success = Input::file('zipfile')->move($destinationPath, 'archivo_zip.zip');
 
                 $zip = new ZipArchive;
@@ -131,7 +134,7 @@ class ActaController extends Controller
 
                 $v = Validator::make($json, $reglas_acta, $mensajes);
                 if ($v->fails()) {
-                    Storage::deleteDirectory("imports");
+                    Storage::deleteDirectory('imports/'.$user_email.'/');
                     return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
                 }
 
@@ -141,8 +144,8 @@ class ActaController extends Controller
 
                 DB::beginTransaction();
 
-                $json['firma_solicita'] = $json['requisiciones'][0]['firma_solicita'];
-                $json['cargo_solicita'] = $json['requisiciones'][0]['cargo_solicita'];
+                //$json['firma_solicita'] = $json['requisiciones'][0]['firma_solicita'];
+                //$json['cargo_solicita'] = $json['requisiciones'][0]['cargo_solicita'];
 
                 $acta = Acta::create($json);
 
@@ -182,13 +185,13 @@ class ActaController extends Controller
 
                 DB::commit();
 
-                Storage::deleteDirectory("imports");
+                Storage::deleteDirectory('imports/'.$user_email.'/');
 
                 return Response::json([ 'data' => $json ],200);
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            Storage::deleteDirectory("imports");
+            Storage::deleteDirectory('imports/'.$user_email.'/');
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }

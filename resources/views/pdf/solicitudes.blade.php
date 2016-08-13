@@ -149,7 +149,10 @@
 	@if($acta->estatus < 3)
 	<div id="watermark">SIN VALIDEZ</div>
 	@endif
-@foreach($acta->requisiciones as $requisicion)
+@foreach($acta->requisiciones as $index => $requisicion)
+	@if($index>0)
+	<div style="page-break-after:always;"></div>
+	@endif
 	<table width="100%">
 		<thead>
 			<tr class="tabla-datos">
