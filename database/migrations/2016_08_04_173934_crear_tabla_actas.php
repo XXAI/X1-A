@@ -32,8 +32,8 @@ class CrearTablaActas extends Migration
             $table->string('encargado_almacen',255)->nullable();
             $table->string('coordinador_comision_abasto',255)->nullable();
 
-            $table->string('firma_solicita',255);
-            $table->string('cargo_solicita',255);
+            //$table->string('firma_solicita',255);
+            //$table->string('cargo_solicita',255);
 
             $table->integer('estatus')->length(1);
             $table->timestamps();

@@ -20,22 +20,25 @@
         	display: inline-block;
         }
 		.cuerpo{
-			font-size: 10pt;
+			font-size: 6pt;
 			font-family: arial, sans-serif;
+		}
+		.pequenio{
+			font-size: 7pt !important;
 		}
 		.titulo2{
 			font-weight: bold;
 			font-family: arial, sans-serif;
-			font-size: 9pt;
+			/*font-size: 9pt;*/
 		}
 		.titulo3{
 			font-weight: bold;
 			font-family: arial, sans-serif;
-			font-size: 10pt;
+			/*font-size: 10pt;*/
 		}
 		.texto{
 			font-family: arial, sans-serif;
-			font-size: 12pt;
+			/*font-size: 12pt;*/
 		}
 		.negrita{
 			font-weight: bold;
@@ -63,13 +66,13 @@
 		}
 		.encabezado-tabla{
 			font-family: arial, sans-serif;
-			font-size: 5pt;
+			/*font-size: 5pt;*/
 			text-align: center;
 			vertical-align: middle;
 		}
 		.linea-tabla{
 			font-family: arial, sans-serif;
-			font-size: 5pt;
+			/*font-size: 5pt;*/
 			text-align: center;
 			vertical-align: middle;
 			border-bottom:none !important;
@@ -115,7 +118,7 @@
 		    position: fixed;
 		}
 		.header {
-		    top: -8.5em;
+		    top: -12.5em;
 		}
 		.footer {
 		    bottom: 0px;
@@ -142,17 +145,27 @@
 					<img src="{{ public_path().'/img/LogoInstitucional.png' }}" height="45">
 				</td>
 			</tr>
+			<tr><td colspan="4" class="titulo2" align="center">SECRETARÍA DE SALUD</td></tr>
 			<tr><td colspan="4" class="titulo2" align="center">INSTITUTO DE SALUD</td></tr>
 			<tr><td colspan="4" class="titulo2" align="center">DIRECCIÓN DE ADMINISTRACIÓN Y FINANZAS</td></tr>
 			<tr><td colspan="4" class="titulo2" align="center">SUBDIRECCION DE RECURSOS MATERIALES Y SERVICIOS GENERALES</td></tr>
 		</table>
 	</div>
+	<!-- {{$pagina = 0}} -->
+
+	@foreach($pedidos as $proveedores)
+	@foreach($proveedores as $proveedor)
+	@foreach($proveedor as $index => $pedido)
+	@if($pagina > 0)
+	<div style="page-break-after:always;"></div>
+	@endif
+	<!-- {{$pagina++}} -->
 	<table width="100%">
 		<tbody>
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla fondo-titulo">PEDIDO EMERGENTE DE ABASTOS A UNIDADES MEDICAS EN RELACION AL CONTRATO ABIERTO DE PRESTACION DE SERVICIO.</th>
 				<th rowspan="2" class="encabezado-tabla fondo-titulo"> No. DE OFICIO DE SOLICITUD DEL ÁREA MÉDICA</th>
-				<th rowspan="2" class="encabezado-tabla">(oficio de referencia)</th>
+				<th rowspan="2" class="encabezado-tabla">{{$pedido['oficio']}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla texto-justificado" rowspan="4">
@@ -186,21 +199,23 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">NÚMERO DE PEDIDO ADJUDICADO EN LICITACIÓN</th>
-				<th class="encabezado-tabla">{{$requisicion->pedido}}</th>
+				<th class="encabezado-tabla">{{$pedido['pedido']}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">PROVEEDOR ADJUDICADO</th>
-				<th colspan="2" class="encabezado-tabla"></th>
+				<th colspan="2" class="encabezado-tabla">{{$pedido['proveedor']}}</th>
 				<th class="encabezado-tabla fondo-titulo">No. DE REQUISICIÓN</th>
-				<th colspan="3" class="encabezado-tabla">{{$requisicion->numero}}</th>
+				<th colspan="3" class="encabezado-tabla">{{$pedido['no_requisicion']}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">LUGAR DE ENTREGA</th>
-				<th colspan="2" class="encabezado-tabla">{{$requisicion->acta->lugar_entrega}}</th>
+				<th colspan="2" class="encabezado-tabla">{{$pedido['lugar_entrega']}}</th>
 				<th class="encabezado-tabla fondo-titulo">CONDICIONES DE PAGO</th>
 				<th colspan="3" class="encabezado-tabla"> 20 días naturales contados a partir de la recepción de la factura original, debidamente requisitada y previa validación de la unidad aplicativa a entera satisfacción de las mismas. Las facturas deberán presentarse a la Dirección de Atención Médica, mismas que enviaran a la Subdirección de Recursos Materiales y Servicios Generales para realizar el trámite correspondiente para este fin, conforme a la fuente de Financiamiento correspondiente.</th>
 			</tr>
 		</tbody>
+	<!--/table>
+	<table width="100%"-->
 		<thead>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">No. DE LOTE</th>
@@ -214,18 +229,22 @@
 		</thead>
 		<tbody>
 
-		@foreach($requisicion->insumos as $indice => $insumo)
+		@foreach($pedido['insumos'] as $insumo)
 			<tr class="tabla-datos">
-				<td class="linea-tabla texto-centro">{{$insumo->lote}}</td>
-				<td class="linea-tabla texto-centro">{{$insumo->clave}}</td>
-				<td class="linea-tabla texto-centro">{{$insumo->descripcion}}</td>
-				<td class="linea-tabla texto-centro">{{number_format($insumo->pivot->cantidad_aprovada)}}</td>
-				<td class="linea-tabla texto-centro">{{$insumo->unidad}}</td>
-				<td class="linea-tabla texto-centro">$ {{number_format($insumo->precio,2)}}</td>
-				<td class="linea-tabla texto-centro">$ {{number_format($insumo->pivot->total_aprovado,2)}}</td>
+				<td class="linea-tabla texto-centro">{{$insumo['lote']}}</td>
+				<td class="linea-tabla texto-centro">{{$insumo['clave']}}</td>
+				<td class="linea-tabla texto-centro"><small>{{$insumo['descripcion']}}</small></td>
+				<td class="linea-tabla texto-centro">{{number_format($insumo['pivot']['cantidad_aprovada'])}}</td>
+				<td class="linea-tabla texto-centro">{{$insumo['unidad']}}</td>
+				<td class="linea-tabla texto-centro">$ {{number_format($insumo['precio'],2)}}</td>
+				<td class="linea-tabla texto-centro">$ {{number_format($insumo['pivot']['total_aprovado'],2)}}</td>
 			</tr>
 		@endforeach
-		
+
+		<!--/tbody>
+	</table>
+	<table width="100%">
+		<tbody-->
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla" rowspan="3" colspan="2">
 					<img src="{{ public_path().'/img/Marca.png' }}" width="125">
@@ -234,15 +253,15 @@
 					Facturar 2016 a nombre del Instituto de Salud. Unidad Administrativa Edif. C, Maya Tuxtla Gutiérrez, Chiapas, 29010 R.F.C. ISA-961203- QN5
 				</th>
 				<th class="encabezado-tabla fondo-titulo" >SUBTOTAL</th>
-				<th class="encabezado-tabla" >$ {{number_format($requisicion->sub_total,2)}}</th>
+				<th class="encabezado-tabla" >$ {{number_format($pedido['sub_total'],2)}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo" >I.V.A.</th>
-				<th class="encabezado-tabla">{{($requisicion->tipo_requisicion==3)?'$ '.number_format($requisicion->iva,2):'SIN IVA'}}</th>
+				<th class="encabezado-tabla">$ {{number_format($pedido['iva'],2)}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo" >T O T A L</th>
-				<th class="encabezado-tabla" >$ {{number_format($requisicion->gran_total,2)}}</th>
+				<th class="encabezado-tabla" >$ {{number_format($pedido['gran_total'],2)}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="7" class="encabezado-tabla fondo-titulo texto-izquierda">
@@ -251,7 +270,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="7" class="encabezado-tabla fondo-titulo texto-izquierda">
-					FUENTE DE FINANCIAMIENTO:
+					FUENTE DE FINANCIAMIENTO: {{$pedido['fuente_financiamiento']}}
 				</th>
 			</tr>
 			<tr class="tabla-datos">
@@ -261,5 +280,8 @@
 			</tr>
 		</tbody>
 	</table>
+	@endforeach
+	@endforeach
+	@endforeach
 </body>
 </html>

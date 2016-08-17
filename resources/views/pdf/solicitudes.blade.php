@@ -56,6 +56,9 @@
 		.texto-medio{
 			vertical-align: middle;
 		}
+		.texto-fondo{
+			vertical-align: bottom !important;
+		}
 		.texto-centro{
 			text-align: center;
 		}
@@ -264,8 +267,8 @@
 				<th width="50%" rowspan="3"></th>
 			</tr>
 			<tr class="tabla-datos">
-				<td class="encabezado-tabla">{{$configuracion->coordinador_abasto}}</td>
-				<td class="encabezado-tabla">{{$configuracion->director_atencion_medica}}</td>
+				<td class="encabezado-tabla texto-fondo" height="30">{{$configuracion->coordinador_abasto}}</td>
+				<td class="encabezado-tabla texto-fondo" height="30">{{$configuracion->director_atencion_medica}}</td>
 			</tr>
 			<tr class="tabla-datos">
 				<td class="encabezado-tabla">COORDINADOR DE ABASTO</td>

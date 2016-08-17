@@ -15,4 +15,9 @@ class Acta extends Model {
     public function unidadMedica(){
     	return $this->hasOne('App\Models\UnidadMedica','clues','clues');
     }
+
+    public function proveedores(){
+    	return $this->belongsToMany('\App\Models\Proveedor', 'acta_proveedor', 'acta_id', 'proveedor_id')
+    				->withPivot('num_oficio');
+    }
 }

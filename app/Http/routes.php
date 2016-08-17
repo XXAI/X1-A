@@ -112,7 +112,8 @@ Route::post('/signin', function () {
 Route::group([ 'prefix' => 'v1'], function () {
     Route::get('solicitudes-pdf/{id}',    'RequisicionController@generarSolicitudesPDF');
     Route::get('oficio-pdf/{id}',    'RequisicionController@generarOficioPDF');
-    Route::get('pedido-pdf/{id}',    'PedidoController@generarPedidoPDF');
+    Route::get('pedidos-pdf/{id}',    'PedidoController@generarPedidoPDF');
+    Route::get('notificacion-pdf/{id}',    'PedidoController@generarNotificacionPDF');
     
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     

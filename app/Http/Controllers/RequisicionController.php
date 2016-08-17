@@ -12,7 +12,7 @@ use App\Models\Empresa;
 use App\Models\UnidadMedica;
 use App\Models\Configuracion;
 use Illuminate\Support\Facades\Input;
-use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive;
+use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, DateTime;
 
 class RequisicionController extends Controller
 {
@@ -35,7 +35,7 @@ class RequisicionController extends Controller
             $filtro = Input::get('filtro');
 
             $recurso = Acta::getModel();
-
+            
             if($query){
                 $recurso = $recurso->where(function($condition)use($query){
                     $condition->where('folio','LIKE','%'.$query.'%')
@@ -43,6 +43,16 @@ class RequisicionController extends Controller
                             ->orWhere('lugar_reunion','LIKE','%'.$query.'%')
                             ->orWhere('ciudad','LIKE','%'.$query.'%');
                 });
+            }
+
+            if($filtro){
+                if(isset($filtro['estatus'])){
+                    if($filtro['estatus'] == 'validados'){
+                        $recurso = $recurso->whereNotNull('fecha_validacion');
+                    }else if($filtro['estatus'] == 'pendientes'){
+                        $recurso = $recurso->whereNull('fecha_validacion');
+                    }
+                }
             }
 
             $totales = $recurso->count();
@@ -58,46 +68,6 @@ class RequisicionController extends Controller
         }catch(Exception $ex){
             return Response::json(['error'=>$e->getMessage()],500);
         }
-        /*
-        try{
-            //DB::enableQueryLog();
-            $elementos_por_pagina = 50;
-            $pagina = Input::get('pagina');
-            if(!$pagina){
-                $pagina = 1;
-            }
-
-            $query = Input::get('query');
-            $filtro = Input::get('filtro');
-
-            $recurso = Requisicion::leftjoin('actas','actas.id','=','requisiciones.acta_id')
-                                    ->leftjoin('clues','clues.clues','=','actas.clues')
-                                    ->where('requisiciones.estatus','>=',1);
-
-            if($query){
-                $recurso = $recurso->where(function($condition)use($query){
-                    $condition->where('requisiciones.numero','LIKE','%'.$query.'%')
-                            ->orWhere('requisiciones.pedido','LIKE','%'.$query.'%')
-                            ->orWhere('requisiciones.empresa_clave','LIKE','%'.$query.'%')
-                            ->orWhere('actas.clues','LIKE','%'.$query.'%')
-                            ->orWhere('actas.folio','LIKE','%'.$query.'%');
-                });
-            }
-
-            $totales = $recurso->count();
-            
-            $recurso = $recurso->select('actas.folio','actas.clues','clues.nombre AS clues_nombre',
-                                        'requisiciones.*')
-                                ->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
-                                ->orderBy('id','desc')->get();
-
-            //$queries = DB::getQueryLog();
-            //$last_query = end($queries);
-            return Response::json(['data'=>$recurso,'totales'=>$totales],200);
-        }catch(Exception $ex){
-            return Response::json(['error'=>$e->getMessage()],500);
-        }
-        */
     }
 
     /**
@@ -107,7 +77,6 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        //return Response::json([ 'data' => Requisicion::with('acta','insumos')->find($id) ],200);
         return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id) ],200);
     }
 

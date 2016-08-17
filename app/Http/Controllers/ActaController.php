@@ -9,7 +9,7 @@ use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
 use Illuminate\Support\Facades\Input;
-use \Validator,\Hash, \Response, \DB, \PDF, \Storage, \ZipArchive;
+use \Validator,\Hash, \Response, \DB, \PDF, \Storage, \ZipArchive, DateTime;
 
 class ActaController extends Controller
 {
@@ -43,7 +43,8 @@ class ActaController extends Controller
 
             $totales = $recurso->count();
             
-            $recurso = $recurso->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
+            $recurso = $recurso->with('requisiciones','unidadMedica')
+                                ->skip(($pagina-1)*$elementos_por_pagina)->take($elementos_por_pagina)
                                 ->orderBy('id','desc')->get();
 
             //$queries = DB::getQueryLog();
@@ -87,9 +88,9 @@ class ActaController extends Controller
             'hora_inicio'                   => 'required',
             'hora_termino'                  => 'required',
             'lugar_reunion'                 => 'required',
-            'requisiciones'                 => 'required|array|min:1',
-            'director_unidad'               => 'required',
-            'administrador'                 => 'required'
+            'requisiciones'                 => 'required|array|min:1'
+            //'director_unidad'               => 'required',
+            //'administrador'                 => 'required'
             //'encargado_almacen'             => 'required',
             //'coordinador_comision_abasto'   => 'required'
         ];
@@ -295,6 +296,8 @@ class ActaController extends Controller
 
             if($inputs['estatus'] == 3){
                 $acta->estatus = 3;
+                $acta->fecha_validacion = new DateTime();
+
                 $acta->load('requisiciones');
                 $validados = 0;
                 $requisiciones = count($acta->requisiciones);
