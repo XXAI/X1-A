@@ -9,6 +9,18 @@
             margin-right: 6.6em;
             margin-bottom: 1.3em;
         }
+        #watermark {
+			position: fixed;
+			top: 15%;
+			left: 105px;
+			transform: rotate(45deg);
+			transform-origin: 50% 50%;
+			opacity: .5;
+			font-size: 120px;
+			color: #CCCCCC;
+			width: 480px;
+			text-align: center;
+		}
         table{
         	width:100%;
         	border-collapse: collapse;
@@ -151,6 +163,10 @@
 			<tr><td colspan="4" class="titulo2" align="center">SUBDIRECCION DE RECURSOS MATERIALES Y SERVICIOS GENERALES</td></tr>
 		</table>
 	</div>
+	@if($estatus < 4)
+	<div id="watermark">SIN VALIDEZ</div>
+	@endif
+
 	<!-- {{$pagina = 0}} -->
 
 	@foreach($pedidos as $proveedores)
@@ -265,7 +281,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="7" class="encabezado-tabla fondo-titulo texto-izquierda">
-					IMPORTE TOTAL: (____________________ PESOS 00/100 M.N.)
+					IMPORTE TOTAL: ({{$pedido['total_letra']}} M.N.)
 				</th>
 			</tr>
 			<tr class="tabla-datos">
