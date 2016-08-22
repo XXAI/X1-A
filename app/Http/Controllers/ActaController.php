@@ -182,6 +182,21 @@ class ActaController extends Controller
                         }
                         $requisicion->insumos()->sync($insumos);
                     }
+
+                    if(isset($inputs_requisicion['insumos_clues'])){
+                        $insumos = [];
+                        foreach ($inputs_requisicion['insumos_clues'] as $req_insumo) {
+                            $insumos[] = [
+                                'insumo_id' => $req_insumo['id'],
+                                'clues' => $req_insumo['pivot']['clues'],
+                                'cantidad' => $req_insumo['pivot']['cantidad'],
+                                'total' => $req_insumo['pivot']['total'],
+                                'cantidad_validada' => $req_insumo['pivot']['cantidad'],
+                                'total_validado' => $req_insumo['pivot']['total']
+                            ];
+                        }
+                        $requisicion->insumosClues()->sync($insumos);
+                    }
                 }
 
                 DB::commit();

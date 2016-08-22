@@ -185,6 +185,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla texto-justificado" rowspan="4">
+				<small>
 					<p>
 					FUNDAMENTO LEGAL: CLAUSULA SEGUNDA NUMERALES VIII párrafos primero y segundo Y IX ultimo parrafo del contrato contraido con la empresa {{$empresa->nombre}} que a la letra dice:…
 					</p>
@@ -203,6 +204,7 @@
 					<p>
 					...El importe que se genere de los pagos que “EL INSTITUTO” realizará a los proveedores locales que cubran el desabasto, estará incluido y con cargo al monto total máximo establecido en la CLAUSULA TERCERA del presente contrato.”…
 					</p>
+				</small>
 				</th>
 			</tr>
 			<tr class="tabla-datos">
@@ -249,7 +251,9 @@
 			<tr class="tabla-datos">
 				<td class="linea-tabla texto-centro">{{$insumo['lote']}}</td>
 				<td class="linea-tabla texto-centro">{{$insumo['clave']}}</td>
-				<td class="linea-tabla texto-centro"><small>{{$insumo['descripcion']}}</small></td>
+				<td class="linea-tabla texto-centro">
+					<div style="page-break-inside:avoid;"><small>{{$insumo['descripcion']}}</small></div>
+				</td>
 				<td class="linea-tabla texto-centro">{{number_format($insumo['pivot']['cantidad_aprovada'])}}</td>
 				<td class="linea-tabla texto-centro">{{$insumo['unidad']}}</td>
 				<td class="linea-tabla texto-centro">$ {{number_format($insumo['precio'],2)}}</td>

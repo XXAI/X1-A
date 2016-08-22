@@ -77,7 +77,7 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id) ],200);
+        return Response::json([ 'data' => Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id) ],200);
     }
 
     public function generarSolicitudesPDF($id){
@@ -109,7 +109,6 @@ class RequisicionController extends Controller
 
         //$data['unidad'] = $data['requisicion']->acta->clues;
         //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
-
         $pdf = PDF::loadView('pdf.solicitudes', $data);
         /*
         if($data['requisicion']->estatus == 1){
@@ -210,7 +209,25 @@ class RequisicionController extends Controller
                             'total_aprovado' => $req_insumo['total_aprovado']
                         ];
                     }
+                    $requisicion->insumos()->sync([]);
                     $requisicion->insumos()->sync($insumos);
+
+                    if(Input::get('insumos_clues')){
+                        $inputs_insumos = Input::get('insumos_clues');
+                        $insumos = [];
+                        foreach ($inputs_insumos as $req_insumo) {
+                            $insumos[] = [
+                                'insumo_id' => $req_insumo['insumo_id'],
+                                'cantidad' => $req_insumo['cantidad'],
+                                'total' => $req_insumo['total'],
+                                'cantidad_validada' => $req_insumo['cantidad_aprovada'],
+                                'total_validado' => $req_insumo['total_aprovado'],
+                                'clues' => $req_insumo['clues']
+                            ];
+                        }
+                        $requisicion->insumosClues()->sync([]);
+                        $requisicion->insumosClues()->sync($insumos);
+                    }
                 }
             }
 

@@ -17,4 +17,9 @@ class Requisicion extends Model {
     	return $this->belongsToMany('\App\Models\Insumo', 'requisicion_insumo', 'requisicion_id', 'insumo_id')
     				->withPivot('cantidad','total','cantidad_aprovada','total_aprovado','proveedor_id');
     }
+
+    public function insumosClues(){
+        return $this->belongsToMany('\App\Models\Insumo', 'requisicion_insumo_clues', 'requisicion_id', 'insumo_id')
+                    ->withPivot('clues','cantidad','total','cantidad_validada','total_validado');
+    }
 }
