@@ -77,7 +77,15 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        return Response::json([ 'data' => Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id) ],200);
+        $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id);
+        
+        $clues = [];
+        foreach ($acta->requisiciones as $requisicion) {
+            $clues = array_merge($clues,$requisicion->insumosClues->lists('pivot.clues')->toArray());
+        }
+        $clues = UnidadMedica::whereIn('clues',$clues)->lists('nombre','clues');
+
+        return Response::json([ 'data' => $acta, 'clues' => $clues ],200);
     }
 
     public function generarSolicitudesPDF($id){
