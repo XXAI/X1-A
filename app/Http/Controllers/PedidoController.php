@@ -601,7 +601,11 @@ class PedidoController extends Controller
                     }
                     
                     if(count($lista_proveedores)){
-                        $oficio_consecutivo = $acta->num_oficio_pedido;
+                        if($inputs['estatus'] == 4){
+                            $oficio_consecutivo = $acta->num_oficio_pedido;
+                        }else{
+                            $oficio_consecutivo = 0;
+                        }
                         $proveedores_sync = [];
                         foreach ($lista_proveedores as $proveedor_id => $valor) {
                             $proveedores_sync[] =[
@@ -609,7 +613,9 @@ class PedidoController extends Controller
                                 'proveedor_id' => $proveedor_id,
                                 'num_oficio' => $oficio_consecutivo
                             ];
-                            $oficio_consecutivo++;
+                            if($inputs['estatus'] == 4){
+                                $oficio_consecutivo++;
+                            }
                         }
                         $acta->proveedores()->sync([]);
                         $acta->proveedores()->sync($proveedores_sync);
