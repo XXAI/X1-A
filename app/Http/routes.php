@@ -114,6 +114,7 @@ Route::group([ 'prefix' => 'v1'], function () {
     Route::get('oficio-pdf/{id}',    'RequisicionController@generarOficioPDF');
     Route::get('pedidos-pdf/{id}',    'PedidoController@generarPedidoPDF');
     Route::get('notificacion-pdf/{id}',    'PedidoController@generarNotificacionPDF');
+    Route::get('exportar-csv/{id}',         'ActaController@generarJSON');
     
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     

@@ -129,7 +129,7 @@
 	</p>
 	<p class="texto-derecha">
 		<strong>
-		Oficio No. 5003/DAM/{{$acta->num_oficio}}/2016<br>
+		Oficio No. DAM/SAH/CAMM/{{str_pad($acta->num_oficio,4,'0',STR_PAD_LEFT)}}/2016<br>
 		ASUNTO: SE SOLICITA COMPRA DE MEDICAMENTOS URGENTE.
 		</strong><br><br>
 		<span class="cursiva">
@@ -151,7 +151,7 @@
 		</strong>
 	</p>
 	<p class="texto-justificado">
-		Por medio del presente, solicitó a usted su valiosa intervención, para que se realice la compra inmediata y urgente del listado de medicamentos y material de curación para solventar las condiciones de desabasto existentes en {{$unidad->nombre}}, toda vez que derivado de notificación del desabasto mediante Acta Circunstanciada de dicha __________ y como resultado de la verificación y comprobación por parte del personal de la comisión de abasto de medicamentos dependiente de esta Dirección, esta nos informan que del desabasto de medicamentos, material de curación e insumos médicos considerados en los pedidos Nos. {{$acta->requisiciones}};lo que implica un riesgo continuo el no contar con los insumos necesarios para la atención de usuarios de los servicios de atención hospitalaria y consulta externa.
+		Por medio del presente, solicitó a usted su valiosa intervención, para que se realice la compra inmediata y urgente del listado de medicamentos y material de curación para solventar las condiciones de desabasto existentes en {{$unidad->nombre}}, toda vez que derivado de notificación del desabasto mediante Acta Circunstanciada No. {{$acta->folio}} y como resultado de la verificación y comprobación por parte del personal de la comisión de abasto de medicamentos dependiente de esta Dirección, esta nos informan que del desabasto de medicamentos, material de curación e insumos médicos considerados en los pedidos Nos. {{$acta->requisiciones}};lo que implica un riesgo continuo el no contar con los insumos necesarios para la atención de usuarios de los servicios de atención hospitalaria y consulta externa.
 	</p>
 	<p class="texto-justificado">
  		No omito hacer mención a usted, que la presente solicitud se da con fundamento en el Contrato Abierto de Prestación de Servicios correspondiente a los pedidos con números {{$acta->requisiciones}}, celebrado entre este Instituto y la Empresa {{$empresa->nombre}}., en su Cláusula SEGUNDA, fracción VIII, párrafos primero y segundo, que a la letra dice:

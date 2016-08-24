@@ -90,7 +90,9 @@ class RequisicionController extends Controller
 
     public function generarSolicitudesPDF($id){
         $data = [];
-        $acta = Acta::with('requisiciones')->find($id);
+        $acta = Acta::with(['requisiciones'=>function($query){
+            $query->where('gran_total_validado','>',0);
+        }])->find($id);
 
         $data['acta'] = $acta;
         $empresas = Empresa::where('clave','=',$acta->empresa_clave)->get();
@@ -106,28 +108,18 @@ class RequisicionController extends Controller
         $data['unidad'] = UnidadMedica::where('clues',$acta->clues)->first();
 
         $empresa_clave = $data['empresa']['clave'];
+        $acta->requisiciones->load(['insumos'=>function($query){
+            $query->wherePivot('cantidad_aprovada','>',0);
+        }]);
+        /*
         $acta->requisiciones->load(['insumos'=>function($query)use($empresa_clave){
             $query->select('id','pedido','requisicion','lote','clave','descripcion' ,'marca','unidad','precio',
                             'tipo','cause')->where('proveedor',$empresa_clave);
         }]);
-
-        /*if(!$acta->estatus){
-            return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
-        }*/
-
-        //$data['unidad'] = $data['requisicion']->acta->clues;
-        //$data['empresa'] = $data['requisicion']->acta->empresa_clave;
-        $pdf = PDF::loadView('pdf.solicitudes', $data);
-        /*
-        if($data['requisicion']->estatus == 1){
-            $pdf->output();
-            $dom_pdf = $pdf->getDomPDF();
-            $canvas = $dom_pdf->get_canvas();
-            $w = $canvas->get_width();
-            $h = $canvas->get_height();
-            $canvas->page_text(20, $h - 600, "SIN VALIDAR", Font_Metrics::get_font("arial", "bold"),85, array(0.85, 0.85, 0.85));
-        }
         */
+
+        $pdf = PDF::loadView('pdf.solicitudes', $data);
+        
         return $pdf->stream('Solicitudes-'.$acta->folio.'.pdf');
     }
 
@@ -136,9 +128,16 @@ class RequisicionController extends Controller
         $data = [];
         $data['acta'] = Acta::with('requisiciones')->find($id);
         
-        $fecha = explode('-',$data['acta']->fecha_solicitud);
+        if($data['acta']->fecha_solicitud){
+            $fecha = explode('-',$data['acta']->fecha_solicitud);
+        }else{
+            $fecha = date('YYYY-m-d');
+            $fecha = explode('-',$fecha);
+        }
+
         $fecha[1] = $meses[$fecha[1]];
         $data['acta']->fecha_solicitud = $fecha;
+        
 
         $data['empresa'] = Empresa::where('clave','=',$data['acta']->empresa_clave)->first();
         $data['configuracion'] = Configuracion::find(1);
@@ -168,7 +167,7 @@ class RequisicionController extends Controller
         
         return $pdf->stream($data['acta']->folio.'-Acta.pdf');
     }
-
+    
     /**
      * Update the specified resource in storage.
      *
@@ -247,26 +246,4 @@ class RequisicionController extends Controller
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    /*
-    public function destroy($id){
-        try {
-            $acta = Acta::with('requisiciones')->find($id);
-            foreach ($acta->requisiciones as $requisicion) {
-                $requisicion->insumos()->sync([]);
-            }
-            Requisicion::where('acta_id',$id)->delete();
-            Acta::destroy($id);
-            return Response::json(['data'=>'Elemento eliminado con exito'],200);
-        } catch (Exception $e) {
-           return Response::json(['error' => $e->getMessage()], HttpResponse::HTTP_CONFLICT);
-        }
-    }
-    */
 }

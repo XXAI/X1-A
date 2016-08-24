@@ -8,6 +8,8 @@ use Illuminate\Http\Response as HttpResponse;
 use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
+use App\Models\Empresa;
+use App\Models\UnidadMedica;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \PDF, \Storage, \ZipArchive, DateTime;
 
@@ -227,12 +229,17 @@ class ActaController extends Controller
         $data = [];
         $data['acta'] = Acta::with('requisiciones')->find($id);
 
-        if($data['acta']->estatus != 2){
-            return Response::json(['error' => 'No se puede generar el archivo por que el acta no se encuentra finalizada'], HttpResponse::HTTP_CONFLICT);
-        }
-
+        $empresa = Empresa::where('clave',$data['acta']->empresa_clave)->first();
+        $clues = UnidadMedica::where('clues',$data['acta']->clues)->first();
+        
         $pedidos = $data['acta']->requisiciones->lists('pedido')->toArray();
-        $data['acta']->requisiciones = implode(', ', $pedidos);
+        if(count($pedidos) == 1){
+            $data['acta']->requisiciones = $pedidos[0];
+        }elseif(count($pedidos) == 2){
+            $data['acta']->requisiciones = $pedidos[0] . ' y ' . $pedidos[1];
+        }else{
+            $data['acta']->requisiciones = $pedidos[0] . ', ' . $pedidos[1] . ' y ' . $pedidos[2];
+        }
 
         $data['acta']->hora_inicio = substr($data['acta']->hora_inicio, 0,5);
         $data['acta']->hora_termino = substr($data['acta']->hora_termino, 0,5);
@@ -241,8 +248,9 @@ class ActaController extends Controller
         $fecha[1] = $meses[$fecha[1]];
         $data['acta']->fecha = $fecha;
 
-        $data['unidad'] = env('CLUES_DESCRIPCION');
-        $data['empresa'] = env('EMPRESA');
+        $data['unidad'] = $clues->nombre;
+        $data['empresa'] = $empresa->nombre;
+        $data['empresa_clave'] = $empresa->clave;
         
         $pdf = PDF::loadView('pdf.acta', $data);
         $pdf->output();
@@ -256,18 +264,74 @@ class ActaController extends Controller
     }
 
     public function generarRequisicionPDF($id){
+        $meses = ['01'=>'ENERO','02'=>'FEBRERO','03'=>'MARZO','04'=>'ABRIL','05'=>'MAYO','06'=>'JUNIO','07'=>'JULIO','08'=>'AGOSTO','09'=>'SEPTIEMBRE','10'=>'OCTUBRE','11'=>'NOVIEMBRE','12'=>'DICIEMBRE'];
         $data = [];
         $data['acta'] = Acta::with('requisiciones.insumos')->find($id);
 
-        if($data['acta']->estatus != 2){
-            return Response::json(['error' => 'No se puede generar el archivo por que el acta no se encuentra finalizada'], HttpResponse::HTTP_CONFLICT);
-        }
+        $empresa = Empresa::where('clave',$data['acta']->empresa_clave)->first();
+        $clues = UnidadMedica::where('clues',$data['acta']->clues)->first();
 
-        $data['unidad'] = env('CLUES_DESCRIPCION');
-        $data['empresa'] = env('EMPRESA');
+        $fecha = explode('-',$data['acta']->fecha);
+        $fecha[1] = $meses[$fecha[1]];
+        $data['acta']->fecha = $fecha;
+
+        $data['unidad'] = $clues->nombre;
+        $data['empresa'] = $empresa->nombre;
+        $data['empresa_clave'] = $empresa->clave;
 
         $pdf = PDF::loadView('pdf.requisiciones', $data);
         return $pdf->stream($data['acta']->folio.'Requisiciones.pdf');
+    }
+
+    function encryptData($value){
+       $key = "1C6B37CFCDF98AB8FA29E47E4B8EF1F3";
+       $text = $value;
+       $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_ECB);
+       $iv = mcrypt_create_iv($iv_size, MCRYPT_RAND);
+       $crypttext = mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $key, $text, MCRYPT_MODE_ECB, $iv);
+       return $crypttext;
+    }
+
+    public function generarJSON($id){
+        $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id);
+
+        if($acta->estatus < 3){
+            return Response::json(['error' => 'No se puede generar el archivo por que el acta no se encuentra validada'], HttpResponse::HTTP_CONFLICT);
+        }
+
+        Storage::makeDirectory("export");
+        Storage::put('export/json.'.str_replace('/','-', $acta->folio),json_encode($acta));
+
+        $filename = storage_path()."/app/export/json.".str_replace('/','-', $acta->folio);
+        $handle = fopen($filename, "r");
+        $contents = fread($handle, filesize($filename));
+        $EncryptedData=$this->encryptData($contents);
+        Storage::put('export/json.'.str_replace('/','-', $acta->folio),$EncryptedData);
+        fclose($handle);
+
+        $storage_path = storage_path();
+
+        $zip = new ZipArchive();
+        $zippath = $storage_path."/app/";
+        $zipname = "acta.valida.".str_replace('/','-', $acta->folio).".zip";
+
+        $zip_status = $zip->open($zippath.$zipname,ZIPARCHIVE::CREATE);
+
+        if ($zip_status === true) {
+            $zip->addFile(storage_path().'/app/export/json.'.str_replace('/','-', $acta->folio),'acta.json');
+            $zip->close();
+            Storage::deleteDirectory("export");
+            
+            ///Then download the zipped file.
+            header('Content-Type: application/zip');
+            header('Content-disposition: attachment; filename='.$zipname);
+            header('Content-Length: ' . filesize($zippath.$zipname));
+            readfile($zippath.$zipname);
+            Storage::delete($zipname);
+            exit();
+        }else{
+            return Response::json(['error' => 'El archivo zip, no se encuentra'], HttpResponse::HTTP_CONFLICT);
+        }
     }
 
     /**
@@ -286,9 +350,9 @@ class ActaController extends Controller
         ];
 
         $reglas_acta = [
-            'num_oficio'        =>'required|unique:actas,num_oficio,'.$id,
+            //'num_oficio'        =>'required|unique:actas,num_oficio,'.$id,
             'fecha_solicitud'   =>'required|date',
-            'lugar_entrega'     =>'required',
+            //'lugar_entrega'     =>'required',
             'estatus'           =>'required'
         ];
 
@@ -313,6 +377,9 @@ class ActaController extends Controller
                 $acta->estatus = 3;
                 $acta->fecha_validacion = new DateTime();
 
+                $max_oficio = Acta::max('num_oficio');
+                $acta->num_oficio = $max_oficio+1;
+
                 $acta->load('requisiciones');
                 $validados = 0;
                 $requisiciones = count($acta->requisiciones);
@@ -328,8 +395,8 @@ class ActaController extends Controller
 
             DB::beginTransaction();
 
-            $acta->num_oficio = $inputs['num_oficio'];
-            $acta->lugar_entrega = $inputs['lugar_entrega'];
+            //$acta->num_oficio = $inputs['num_oficio'];
+            //$acta->lugar_entrega = $inputs['lugar_entrega'];
             $acta->fecha_solicitud = $inputs['fecha_solicitud'];
 
             if(!$acta->save()){
