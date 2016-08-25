@@ -373,6 +373,8 @@ class ActaController extends Controller
                 throw new \Exception("El Acta no se puede editar ya que se encuentra con estatus de enviada");
             }
 
+            DB::beginTransaction();
+
             if($inputs['estatus'] == 3){
                 $acta->estatus = 3;
                 $acta->fecha_validacion = new DateTime();
@@ -380,6 +382,17 @@ class ActaController extends Controller
                 $max_oficio = Acta::max('num_oficio');
                 $acta->num_oficio = $max_oficio+1;
 
+                $actas = Acta::where('clues',$acta->clues)->lists('id');
+                $max_requisicion = Requisicion::whereIn('acta_id',$actas)->max('numero');
+                if(!$max_requisicion){
+                    $max_requisicion = 0;
+                }
+
+                /*
+                $acta->load(['requisiciones'=>function($query){
+                    $query->where('gran_total_validado','>',0);
+                }]);
+                */
                 $acta->load('requisiciones');
                 $validados = 0;
                 $requisiciones = count($acta->requisiciones);
@@ -387,13 +400,19 @@ class ActaController extends Controller
                     if($requisicion->estatus === 1){
                         $validados++;
                     }
+                    if($requisicion->gran_total_validado > 0){
+                        $max_requisicion++;
+                        $requisicion->numero = $max_requisicion;
+                        if(!$requisicion->save()){
+                            throw new Exception("Ocurrió un error al intenar guardar los datos de las requisiciones", 1);
+                        }
+                    }
                 }
                 if($validados != $requisiciones){
+                    DB::rollBack();
                     return Response::json(['error' => 'Se necesita validar todas las requisiciones asignadas.', 'error_type'=>'data_validation'], HttpResponse::HTTP_CONFLICT);
                 }
             }
-
-            DB::beginTransaction();
 
             //$acta->num_oficio = $inputs['num_oficio'];
             //$acta->lugar_entrega = $inputs['lugar_entrega'];

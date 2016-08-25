@@ -177,7 +177,7 @@
  		Es importante mencionar que los precios no deberán ser mayores a los de referencia, los cuales ya fueron hechos de su conocimiento con anterioridad.
 	</p>
 	<p class="texto-justificado">
-		Sírvase a encontrar anexo al presente para su atención URGENTE, formato de Requisición No. {{$acta->numeros}}
+		Sírvase a encontrar anexo al presente para su atención URGENTE, formato de Requisición No. {{$proveedor['requisiciones']}}
 	</p>
 	<p class="texto-justificado">
 		Sin más por el momento quedo de usted. 

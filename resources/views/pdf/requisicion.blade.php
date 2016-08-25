@@ -181,7 +181,7 @@
 				<td class="encabezado-tabla">No. {{$requisicion->numero}}</td>
 				<td class="encabezado-tabla">{{$unidad->nombre}}</td>
 				<td class="encabezado-tabla">{{$requisicion->pedido}}</td>
-				<td class="encabezado-tabla">{{$requisicion->lotes}}</td>
+				<td class="encabezado-tabla">{{count($requisicion->insumos)}}</td>
 				<td class="encabezado-tabla">{{$empresa->nombre}}</td>
 				<td class="encabezado-tabla">{{$requisicion->dias_surtimiento}}</td>
 			</tr>

@@ -79,13 +79,18 @@ class RequisicionController extends Controller
     public function show($id){
         $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id);
         
+        $max_oficio = Acta::max('num_oficio');
+        if(!$max_oficio){
+            $max_oficio = 0;
+        }
+
         $clues = [];
         foreach ($acta->requisiciones as $requisicion) {
             $clues = array_merge($clues,$requisicion->insumosClues->lists('pivot.clues')->toArray());
         }
         $clues = UnidadMedica::whereIn('clues',$clues)->lists('nombre','clues');
 
-        return Response::json([ 'data' => $acta, 'clues' => $clues ],200);
+        return Response::json([ 'data' => $acta, 'clues' => $clues,'oficio'=> $max_oficio+1 ],200);
     }
 
     public function generarSolicitudesPDF($id){
