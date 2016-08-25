@@ -126,7 +126,9 @@ class RequisicionController extends Controller
     public function generarOficioPDF($id){
         $meses = ['01'=>'Enero','02'=>'Febrero','03'=>'Marzo','04'=>'Abril','05'=>'Mayo','06'=>'Junio','07'=>'Julio','08'=>'Agosto','09'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre'];
         $data = [];
-        $data['acta'] = Acta::with('requisiciones')->find($id);
+        $data['acta'] = Acta::with(['requisiciones'=>function($query){
+            $query->where('gran_total_validado','>',0);
+        }])->find($id);
         
         if($data['acta']->fecha_solicitud){
             $fecha = explode('-',$data['acta']->fecha_solicitud);

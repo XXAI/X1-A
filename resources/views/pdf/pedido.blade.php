@@ -181,7 +181,7 @@
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla fondo-titulo">PEDIDO EMERGENTE DE ABASTOS A UNIDADES MEDICAS EN RELACION AL CONTRATO ABIERTO DE PRESTACION DE SERVICIO.</th>
 				<th rowspan="2" class="encabezado-tabla fondo-titulo"> No. DE OFICIO DE SOLICITUD DEL ÁREA MÉDICA</th>
-				<th rowspan="2" class="encabezado-tabla">{{$pedido['oficio']}}</th>
+				<th rowspan="2" class="encabezado-tabla">{{$oficio_area_medica}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="5" class="encabezado-tabla texto-justificado" rowspan="4">

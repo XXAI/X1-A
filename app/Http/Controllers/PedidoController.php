@@ -79,12 +79,29 @@ class PedidoController extends Controller
     public function show($id){
         $proveedores = Proveedor::all();
         $max_oficio = Acta::max('num_oficio_pedido');
-        return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id), 'proveedores'=>$proveedores ,'oficio'=> $max_oficio+1 ],200);
+        if(!$max_oficio){
+            $max_oficio = 0;
+        }
+        $acta = Acta::with([
+            'requisiciones'=>function($query){
+                $query->where('gran_total_validado','>',0);
+            },'requisiciones.insumos'=>function($query){
+                $query->wherePivot('cantidad_aprovada','>',0);
+            }])->find($id);
+
+        return Response::json([ 'data' => $acta, 'proveedores'=>$proveedores ,'oficio'=> $max_oficio+1 ],200);
     }
 
     public function generarNotificacionPDF($id){
         $data = [];
-        $acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
+        //$acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
+        $acta = Acta::with([
+            'requisiciones'=>function($query){
+                $query->where('gran_total_validado','>',0);
+            },'requisiciones.insumos'=>function($query){
+                $query->wherePivot('cantidad_aprovada','>',0);
+            },'proveedores'
+        ])->find($id);
 
         $meses = ['01'=>'Enero','02'=>'Febrero','03'=>'Marzo','04'=>'Abril','05'=>'Mayo','06'=>'Junio','07'=>'Julio','08'=>'Agosto','09'=>'Septiembre','10'=>'Octubre','11'=>'Noviembre','12'=>'Diciembre'];
         $fecha = explode('-',$acta->fecha_pedido);
@@ -101,25 +118,27 @@ class PedidoController extends Controller
         $proveedores = [];
         foreach ($acta->requisiciones as $requisicion) {
             foreach ($requisicion->insumos as $insumo) {
-                if(!isset($proveedores[$insumo->pivot->proveedor_id])){
-                    $proveedores[$insumo->pivot->proveedor_id] = [
-                        'nombre' => '',
-                        'direccion' => '',
-                        'ciudad' => '',
-                        'telefono' => '',
-                        'num_oficio' => 0,
-                        'pedidos' => [],
-                        'partidas' => [],
-                        'requisiciones' => []
-                    ];
-                }
-                if(!isset($proveedores[$insumo->pivot->proveedor_id]['pedidos'][$requisicion->pedido])){
-                    $proveedores[$insumo->pivot->proveedor_id]['pedidos'][$requisicion->pedido] = $requisicion->pedido;
-                    $proveedores[$insumo->pivot->proveedor_id]['partidas'][$partidas_presupuestarias[$requisicion->pedido]] = true;
+                if($insumo->pivot->proveedor_id){
+                    if(!isset($proveedores[$insumo->pivot->proveedor_id])){
+                        $proveedores[$insumo->pivot->proveedor_id] = [
+                            'nombre' => '',
+                            'direccion' => '',
+                            'ciudad' => '',
+                            'telefono' => '',
+                            'num_oficio' => 0,
+                            'pedidos' => [],
+                            'partidas' => [],
+                            'requisiciones' => []
+                        ];
+                    }
+                    if(!isset($proveedores[$insumo->pivot->proveedor_id]['pedidos'][$requisicion->pedido])){
+                        $proveedores[$insumo->pivot->proveedor_id]['pedidos'][$requisicion->pedido] = $requisicion->pedido;
+                        $proveedores[$insumo->pivot->proveedor_id]['partidas'][$partidas_presupuestarias[$requisicion->pedido]] = true;
 
-                }
-                if(!isset($proveedores[$insumo->pivot->proveedor_id]['requisiciones'][$requisicion->numero])){
-                    $proveedores[$insumo->pivot->proveedor_id]['requisiciones'][$requisicion->numero] = true;
+                    }
+                    if(!isset($proveedores[$insumo->pivot->proveedor_id]['requisiciones'][$requisicion->numero])){
+                        $proveedores[$insumo->pivot->proveedor_id]['requisiciones'][$requisicion->numero] = true;
+                    }
                 }
             }
         }
@@ -167,14 +186,22 @@ class PedidoController extends Controller
         $data['proveedores'] = $proveedores;
         $data['acta'] = $acta;
         $data['configuracion'] = Configuracion::find(1);
+        //return Response::json(['data' => $data], 200);
+
         $pdf = PDF::loadView('pdf.notificacion', $data);
         return $pdf->stream('Notificaciones-'.$acta->folio.'.pdf');
-        //return Response::json(['data' => $proveedores], 200);
     }
 
     public function generarPedidoPDF($id){
         $data = [];
-        $acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
+        //$acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
+        $acta = Acta::with([
+            'requisiciones'=>function($query){
+                $query->where('gran_total_validado','>',0);
+            },'requisiciones.insumos'=>function($query){
+                $query->wherePivot('cantidad_aprovada','>',0);
+            },'proveedores'
+        ])->find($id);
 
         $num_oficio_proveedores = $acta->proveedores()->lists('num_oficio','proveedor_id');
         /*if(!$requisicion->estatus){
@@ -195,30 +222,32 @@ class PedidoController extends Controller
             }
             $pedido = [];
             foreach ($requisicion->insumos as $insumo) {
-                if(!isset($pedido[$insumo->pivot->proveedor_id])){
-                    $pedido[$insumo->pivot->proveedor_id] = [
-                        'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
-                        'pedido' => $requisicion->pedido,
-                        'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
-                        'no_requisicion' => $requisicion->numero,
-                        'lugar_entrega' => $acta->lugar_entrega,
-                        'sub_total' => 0,
-                        'iva' => 0,
-                        'gran_total' => 0,
-                        'total_letra' => '',
-                        'fuente_financiamiento' => $acta->fuente_financiamiento,
-                        'insumos' => []
-                    ];
+                if($insumo->pivot->proveedor_id){
+                    if(!isset($pedido[$insumo->pivot->proveedor_id])){
+                        $pedido[$insumo->pivot->proveedor_id] = [
+                            'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
+                            'pedido' => $requisicion->pedido,
+                            'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
+                            'no_requisicion' => $requisicion->numero,
+                            'lugar_entrega' => $acta->lugar_entrega,
+                            'sub_total' => 0,
+                            'iva' => 0,
+                            'gran_total' => 0,
+                            'total_letra' => '',
+                            'fuente_financiamiento' => $acta->fuente_financiamiento,
+                            'insumos' => []
+                        ];
+                    }
+                    $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
+                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
+                    if($requisicion->tipo_requisicion == 3){
+                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_aprovado*16/100;
+                        $iva = $insumo->pivot->total_aprovado*16/100;
+                    }else{
+                        $iva = 0;
+                    }
+                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_aprovado;
                 }
-                $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
-                $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
-                if($requisicion->tipo_requisicion == 3){
-                    $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_aprovado*16/100;
-                    $iva = $insumo->pivot->total_aprovado*16/100;
-                }else{
-                    $iva = 0;
-                }
-                $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_aprovado;
             }
             foreach ($pedido as $index => $proveedor) {
                 $pedido[$index]['total_letra'] = $this->transformarCantidadLetras($proveedor['gran_total']);
@@ -230,6 +259,7 @@ class PedidoController extends Controller
         $data['empresa'] = $empresa;
         $data['pedidos'] = $pedidos;
         $data['estatus'] = $acta->estatus;
+        $data['oficio_area_medica'] = $acta->num_oficio;
 
         $pdf = PDF::loadView('pdf.pedido', $data);
         return $pdf->stream('Pedido-'.$acta->folio.'.pdf');
@@ -518,7 +548,7 @@ class PedidoController extends Controller
         ];
 
         $reglas_acta = [
-            'num_oficio_pedido'         =>'required|unique:acta_proveedor,num_oficio,'.$id.',acta_id',
+            //'num_oficio_pedido'         =>'required|unique:acta_proveedor,num_oficio,'.$id.',acta_id',
             'fecha_pedido'              =>'required|date',
             'fuente_financiamiento'     =>'required',
             'estatus'                   =>'required'
@@ -534,7 +564,14 @@ class PedidoController extends Controller
                 return Response::json(['error' => $v->errors(), 'error_type'=>'form_validation'], HttpResponse::HTTP_CONFLICT);
             }
 
-            $acta = Acta::with('requisiciones.insumos')->find($id);
+            //$acta = Acta::with('requisiciones.insumos')->find($id);
+            $acta = Acta::with([
+                'requisiciones'=>function($query){
+                    $query->where('gran_total_validado','>',0);
+                },'requisiciones.insumos'=>function($query){
+                    $query->wherePivot('cantidad_aprovada','>',0);
+                }
+            ])->find($id);
 
             if($acta->estatus >= 4){
                 throw new \Exception("El Acta no se puede editar ya que se encuentra con estatus de validada");
@@ -545,12 +582,17 @@ class PedidoController extends Controller
             $estatus_anterior = $acta->estatus;
 
             $acta->fecha_pedido = $inputs['fecha_pedido'];
-            $acta->num_oficio_pedido = $inputs['num_oficio_pedido'];
+            //$acta->num_oficio_pedido = $inputs['num_oficio_pedido'];
             $acta->fuente_financiamiento = $inputs['fuente_financiamiento'];
             $acta->estatus = $inputs['estatus'];
 
             if($inputs['estatus'] == 4){
                 $acta->fecha_termino = new DateTime();
+                $max_oficio = Acta::max('num_oficio_pedido');
+                if(!$max_oficio){
+                    $max_oficio = 0;
+                }
+                $acta->num_oficio_pedido = ($max_oficio + 1);
             }
 
             $lista_proveedores = [];
