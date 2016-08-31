@@ -150,19 +150,29 @@ class RequisicionController extends Controller
         $data['configuracion'] = Configuracion::find(1);
         $data['unidad'] = UnidadMedica::where('clues',$data['acta']->clues)->first();
 
-        $pedidos = $data['acta']->requisiciones->lists('pedido')->toArray();
+        $pedidos = array_keys($data['acta']->requisiciones->lists('pedido','pedido')->toArray());
         $numeros = $data['acta']->requisiciones->lists('numero')->toArray();
         if(count($pedidos) == 1){
             $data['acta']->requisiciones = $pedidos[0];
-            $data['acta']->numeros       = $numeros[0];
         }elseif(count($pedidos) == 2){
             $data['acta']->requisiciones = $pedidos[0] . ' y ' . $pedidos[1];
-            $data['acta']->numeros       = $numeros[0] . ' y ' . $numeros[1];
         }else{
             $data['acta']->requisiciones = $pedidos[0] . ', ' . $pedidos[1] . ' y ' . $pedidos[2];
-            $data['acta']->numeros       = $numeros[0] . ', ' . $numeros[1] . ' y ' . $numeros[2];
         }
-        //$data['acta']->requisiciones = implode(', ', $pedidos);
+
+        $data['acta']->numeros = '';
+        if(count($numeros) > 2){
+            $separador = '';
+            for ($i=0; $i < count($numeros)-1 ; $i++) { 
+                $data['acta']->numeros .= $separador . $numeros[$i];
+                $separador = ', ';
+            }
+            $data['acta']->numeros .= ' y ' . $numeros[count($numeros)-1];
+        }elseif(count($numeros) > 1){
+            $data['acta']->numeros = $numeros[0] . ' y ' . $numeros[1];
+        }else{
+            $data['acta']->numeros = $numeros[0];
+        }
         
         $pdf = PDF::loadView('pdf.oficio', $data);
         $pdf->output();
