@@ -20,4 +20,9 @@ class Acta extends Model {
     	return $this->belongsToMany('\App\Models\Proveedor', 'acta_proveedor', 'acta_id', 'proveedor_id')
     				->withPivot('num_oficio');
     }
+	
+	public function empresa(){
+    	return $this->hasOne('App\Models\Empresa','clave','empresa_clave');
+    }
+	
 }

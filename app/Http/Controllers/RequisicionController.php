@@ -77,8 +77,8 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id);
-        
+        $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues','unidadMedica','empresa')->find($id);
+        $configuracion = Configuracion::find(1);
         $max_oficio = Acta::max('num_oficio');
         if(!$max_oficio){
             $max_oficio = 0;
@@ -90,7 +90,7 @@ class RequisicionController extends Controller
         }
         $clues = UnidadMedica::whereIn('clues',$clues)->lists('nombre','clues');
 
-        return Response::json([ 'data' => $acta, 'clues' => $clues,'oficio'=> $max_oficio+1 ],200);
+        return Response::json([ 'data' => $acta, 'configuracion'=>$configuracion, 'clues' => $clues,'oficio'=> $max_oficio+1 ],200);
     }
 
     public function generarSolicitudesPDF($id){
