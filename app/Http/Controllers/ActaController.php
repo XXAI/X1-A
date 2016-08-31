@@ -220,8 +220,9 @@ class ActaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+
     public function show($id){
-        return Response::json([ 'data' => Acta::with('requisiciones.insumos')->find($id) ],200);
+        return Response::json([ 'data' => Acta::with('requisiciones.insumos','unidadMedica')->find($id)], 200);
     }
 
     public function generarActaPDF($id){
