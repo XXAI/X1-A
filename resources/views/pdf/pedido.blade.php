@@ -236,13 +236,13 @@
 	<table width="100%"-->
 		<thead>
 			<tr class="tabla-datos">
-				<th class="encabezado-tabla fondo-titulo">No. DE LOTE</th>
-				<th class="encabezado-tabla fondo-titulo">CLAVE</th>
+				<th class="encabezado-tabla fondo-titulo" width="15%">No. DE LOTE</th>
+				<th class="encabezado-tabla fondo-titulo" width="15%">CLAVE</th>
 				<th class="encabezado-tabla fondo-titulo">DESCRIPCIÓN DE LOS INSUMOS</th>
 				<th class="encabezado-tabla fondo-titulo">CANTIDAD</th>
 				<th class="encabezado-tabla fondo-titulo">UNIDAD DE MEDIDA</th>
-				<th class="encabezado-tabla fondo-titulo">PRECIO UNITARIO</th>
-				<th class="encabezado-tabla fondo-titulo">PRECIO TOTAL</th>
+				<th class="encabezado-tabla fondo-titulo" width="12%">PRECIO UNITARIO</th>
+				<th class="encabezado-tabla fondo-titulo" width="14%">PRECIO TOTAL</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -261,19 +261,19 @@
 			</tr>
 		@endforeach
 
-		<!--/tbody>
+		</tbody>
 	</table>
 	<table width="100%">
-		<tbody-->
+		<tbody>
 			<tr class="tabla-datos">
-				<th class="encabezado-tabla" rowspan="3" colspan="2">
+				<th class="encabezado-tabla" rowspan="3" colspan="2" width="30%">
 					<img src="{{ public_path().'/img/Marca.png' }}" width="125">
 				</th>
-				<th class="encabezado-tabla texto-justificado texto-fondo" rowspan="3" colspan="3">
+				<th class="encabezado-tabla texto-justificado texto-fondo" rowspan="3" colspan="3" width="44%">
 					Facturar 2016 a nombre del Instituto de Salud. Unidad Administrativa Edif. C, Maya Tuxtla Gutiérrez, Chiapas, 29010 R.F.C. ISA-961203- QN5
 				</th>
-				<th class="encabezado-tabla fondo-titulo" >SUBTOTAL</th>
-				<th class="encabezado-tabla" >$ {{number_format($pedido['sub_total'],2)}}</th>
+				<th class="encabezado-tabla fondo-titulo" width="12%" >SUBTOTAL</th>
+				<th class="encabezado-tabla" width="14%" >$ {{number_format($pedido['sub_total'],2)}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo" >I.V.A.</th>

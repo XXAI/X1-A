@@ -183,9 +183,9 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th width="10%" class="encabezado-tabla">PEDIDO</th>
-				<th width="7%" class="encabezado-tabla">LOTES A <br>ADJUDICAR</th>
-				<th width="8%" class="encabezado-tabla">EMPRESA <br>ADJUDICADA EN <br>LICITACIÓN</th>
-				<th width="35%" class="encabezado-tabla">DIAS DE SURTIMIENTO</th>
+				<th width="15%" class="encabezado-tabla">LOTES A <br>ADJUDICAR</th>
+				<th width="15%" class="encabezado-tabla">EMPRESA <br>ADJUDICADA EN <br>LICITACIÓN</th>
+				<th width="20%" class="encabezado-tabla">DIAS DE SURTIMIENTO</th>
 			</tr>
 			<tr class="tabla-datos">
 				<td class="encabezado-tabla">No. {{$requisicion->numero}}</td>
@@ -222,14 +222,16 @@
 			</tr>
 		@endforeach
 		</tbody>
+	</table>
+	<table width="100%" style="page-break-inside:avoid;">
 		<tfoot>
 			<tr class="tabla-datos">
-				<td colspan="4" rowspan="3" class="encabezado-tabla texto-medio texto-centro">CONDICIONES COMERCIALES</td>
+				<td colspan="4" rowspan="3" width="65%" class="encabezado-tabla texto-medio texto-centro">CONDICIONES COMERCIALES</td>
 				<th colspan="2" class="encabezado-tabla texto-derecha">SUBTOTAL</th>
 				<td class="encabezado-tabla">$ {{number_format($requisicion->sub_total_validado,2)}}</td>
 			</tr>
 			<tr class="tabla-datos">
-				<th colspan="2" class="encabezado-tabla texto-derecha">IVA</th>
+				<th colspan="2" width="25%" class="encabezado-tabla texto-derecha">IVA</th>
 				<td class="encabezado-tabla">{{($requisicion->tipo_requisicion==3)?'$ '.number_format($requisicion->iva_validado,2):'SIN IVA'}}</td>
 			</tr>
 			<tr class="tabla-datos">
@@ -259,12 +261,12 @@
 			</tr>
 		</tfoot>
 	</table>
-	<table width="100%">
+	<table width="100%" style="page-break-inside:avoid;">
 		<tbody>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla">SOLICITA</th>
 				<th class="encabezado-tabla">DIRECCIÓN O UNIDAD</th>
-				<th width="50%" rowspan="3"></th>
+				<th width="40%" rowspan="3"></th>
 			</tr>
 			<tr class="tabla-datos">
 				<td class="encabezado-tabla texto-fondo" height="30">{{$configuracion->coordinador_abasto}}</td>
