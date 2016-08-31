@@ -234,6 +234,7 @@ class PedidoController extends Controller
                         $pedido[$insumo->pivot->proveedor_id] = [
                             'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
                             'pedido' => $requisicion->pedido,
+                            'tipo_requisicion' => $requisicion->tipo_requisicion,
                             'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
                             'no_requisicion' => $requisicion->numero,
                             'lugar_entrega' => $acta->lugar_entrega,
@@ -241,9 +242,14 @@ class PedidoController extends Controller
                             'iva' => 0,
                             'gran_total' => 0,
                             'total_letra' => '',
-                            'fuente_financiamiento' => $acta->fuente_financiamiento,
+                            'fuente_financiamiento' => '',
                             'insumos' => []
                         ];
+                        if($requisicion->tipo_requisicion == 2){
+                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'FASSA';
+                        }else{
+                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'REPSS';
+                        }
                     }
                     $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
                     $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
@@ -267,6 +273,7 @@ class PedidoController extends Controller
         $data['pedidos'] = $pedidos;
         $data['estatus'] = $acta->estatus;
         $data['oficio_area_medica'] = $acta->num_oficio;
+        $data['configuracion'] = $configuracion;
 
         $pdf = PDF::loadView('pdf.pedido', $data);
         return $pdf->stream('Pedido-'.$acta->folio.'.pdf');
@@ -557,7 +564,7 @@ class PedidoController extends Controller
         $reglas_acta = [
             //'num_oficio_pedido'         =>'required|unique:acta_proveedor,num_oficio,'.$id.',acta_id',
             'fecha_pedido'              =>'required|date',
-            'fuente_financiamiento'     =>'required',
+            //'fuente_financiamiento'     =>'required',
             'estatus'                   =>'required'
         ];
 
@@ -590,7 +597,7 @@ class PedidoController extends Controller
 
             $acta->fecha_pedido = $inputs['fecha_pedido'];
             //$acta->num_oficio_pedido = $inputs['num_oficio_pedido'];
-            $acta->fuente_financiamiento = $inputs['fuente_financiamiento'];
+            //$acta->fuente_financiamiento = $inputs['fuente_financiamiento'];
             $acta->estatus = $inputs['estatus'];
 
             if($inputs['estatus'] == 4){

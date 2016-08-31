@@ -4,10 +4,10 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<style type="text/css">
 		@page {
-            margin-top: 7.3em;
+            margin-top: 8.3em;
             margin-left: 5.6em;
             margin-right: 6.6em;
-            margin-bottom: 1.3em;
+            margin-bottom: 4.5em;
         }
         #watermark {
 			position: fixed;
@@ -63,6 +63,9 @@
 		}
 		.texto-fondo{
 			vertical-align: bottom !important;
+		}
+		.texto-tope{
+			vertical-align: top !important;
 		}
 		.texto-centro{
 			text-align: center;
@@ -217,13 +220,18 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">NÚMERO DE PEDIDO ADJUDICADO EN LICITACIÓN</th>
-				<th class="encabezado-tabla">{{$pedido['pedido']}}</th>
+				<th class="encabezado-tabla">
+					{{$pedido['pedido']}}<br>
+					{{($pedido['tipo_requisicion'] == 1)?'(CAUSES)':(($pedido['tipo_requisicion'] == 2)?'(NO CAUSES)':(($pedido['tipo_requisicion'] == 3)?'(MATERIAL DE CURACIÓN)':'(CONTROLADOS)'))}}
+				</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">PROVEEDOR ADJUDICADO</th>
 				<th colspan="2" class="encabezado-tabla">{{$pedido['proveedor']}}</th>
 				<th class="encabezado-tabla fondo-titulo">No. DE REQUISICIÓN</th>
-				<th colspan="3" class="encabezado-tabla">{{$pedido['no_requisicion']}}</th>
+				<th class="encabezado-tabla">{{$pedido['no_requisicion']}}</th>
+				<th class="encabezado-tabla fondo-titulo">No. DE LOTES</th>
+				<th class="encabezado-tabla">{{count($pedido['insumos'])}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">LUGAR DE ENTREGA</th>
@@ -263,7 +271,7 @@
 
 		</tbody>
 	</table>
-	<table width="100%">
+	<table width="100%" style="page-break-inside:avoid;">
 		<tbody>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla" rowspan="3" colspan="2" width="30%">
@@ -297,6 +305,40 @@
 				<th colspan="7" class="encabezado-tabla fondo-titulo texto-izquierda">
 					TIEMPO DE ENTREGA: Deberá surtir los insumos en un periodo no mayor a 48 horas posteriores a su notificación
 				</th>
+			</tr>
+		</tbody>
+	</table>
+	<table width="100%" style="page-break-inside:avoid;">
+		<tbody>
+			<tr>
+				<td width="2%"></td>
+				<td class="encabezado-tabla texto-fondo linea-firma" height="50">
+					{{$configuracion->jefe_recursos_materiales}}
+				</td>
+				<td width="2%"></td>
+				<td class="encabezado-tabla texto-fondo linea-firma" height="50">
+					{{$configuracion->subdirector_recursos_materiales}}
+				</td>
+				<td width="2%"></td>
+				<td class="encabezado-tabla texto-fondo linea-firma" height="50">
+					{{$configuracion->director_administracion_finanzas}}
+				</td>
+				<td width="2%"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td class="encabezado-tabla texto-tope">
+					JEFE DEL DEPARTAMENTO DE RECURSOS MATERIALES
+				</td>
+				<td></td>
+				<td class="encabezado-tabla texto-tope">
+					SUBDIRECTOR DE RECURSOS MATERIALES Y SERVICIOS GENERALES
+				</td>
+				<td></td>
+				<td class="encabezado-tabla texto-tope">
+					DIRECTOR DE ADMINISTRACIÓN Y FINANZAS
+				</td>
+				<td></td>
 			</tr>
 		</tbody>
 	</table>

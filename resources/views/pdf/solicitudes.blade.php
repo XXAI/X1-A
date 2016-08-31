@@ -4,10 +4,10 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<style type="text/css">
 		@page {
-            margin-top: 7.3em;
+            margin-top: 8.3em;
             margin-left: 5.6em;
             margin-right: 6.6em;
-            margin-bottom: 1.3em;
+            margin-bottom: 4.5em;
         }
         #watermark {
 			position: fixed;
