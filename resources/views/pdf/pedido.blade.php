@@ -172,8 +172,7 @@
 
 	<!-- {{$pagina = 0}} -->
 
-	@foreach($pedidos as $proveedores)
-	@foreach($proveedores as $proveedor)
+	@foreach($pedidos as $proveedor)
 	@foreach($proveedor as $index => $pedido)
 	@if($pagina > 0)
 	<div style="page-break-after:always;"></div>
@@ -342,7 +341,6 @@
 			</tr>
 		</tbody>
 	</table>
-	@endforeach
 	@endforeach
 	@endforeach
 </body>

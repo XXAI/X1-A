@@ -149,10 +149,11 @@
 			<tr><td colspan="4" class="titulo2" align="center">COORDINACIÓN DE ABASTO</td></tr>
 		</table>
 	</div>
-	@if($acta->estatus < 3)
+	@if($acta['estatus'] < 3)
 	<div id="watermark">SIN VALIDEZ</div>
 	@endif
-@foreach($acta->requisiciones as $index => $requisicion)
+
+@for($index = 0, $total_requisiciones = count($acta['requisiciones']); $index < $total_requisiciones; $index++)
 	@if($index > 0)
 	<div style="page-break-after:always;"></div>
 	@endif
@@ -167,14 +168,14 @@
 				<th class="encabezado-tabla texto-izquierda" width="80%">COORDINACIÓN DE ABASTO</th>
 			</tr>
 			<tr class="tabla-datos">
-				<th class="encabezado-tabla texto-izquierda" colspan="2" width="20%">CONCEPTO Y PARTIDA PRESUPUESTAL: {{$empresa['partidas'][$requisicion->pedido]}}</th>
+				<th class="encabezado-tabla texto-izquierda" colspan="2" width="20%">CONCEPTO Y PARTIDA PRESUPUESTAL: {{$empresa['partidas'][$acta['requisiciones'][$index]['pedido']]}}</th>
 			</tr>
 		</thead>
 	</table>
 	<table width="100%">
 		<thead>
 			<tr class="tabla-datos">
-				<th colspan="6" class="encabezado-tabla" align="center">REQUISICION DE {{($requisicion->tipo_requisicion == 1)?'MEDICAMENTOS CAUSES':(($requisicion->tipo_requisicion == 2)?'MEDICAMENTOS NO CAUSES':(($requisicion->tipo_requisicion == 3)?'MATERIAL DE CURACIÓN':'MEDICAMENTOS CONTROLADOS'))}}</th>
+				<th colspan="6" class="encabezado-tabla" align="center">REQUISICION DE {{($acta['requisiciones'][$index]['tipo_requisicion'] == 1)?'MEDICAMENTOS CAUSES':(($acta['requisiciones'][$index]['tipo_requisicion'] == 2)?'MEDICAMENTOS NO CAUSES':(($acta['requisiciones'][$index]['tipo_requisicion'] == 3)?'MATERIAL DE CURACIÓN':'MEDICAMENTOS CONTROLADOS'))}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th rowspan="2" width="20%" class="encabezado-tabla">REQUISICIÓN DE COMPRA</th>
@@ -188,12 +189,12 @@
 				<th width="20%" class="encabezado-tabla">DIAS DE SURTIMIENTO</th>
 			</tr>
 			<tr class="tabla-datos">
-				<td class="encabezado-tabla">No. {{$requisicion->numero}}</td>
+				<td class="encabezado-tabla">No. {{$acta['requisiciones'][$index]['numero']}}</td>
 				<td class="encabezado-tabla">{{$unidad->nombre}}</td>
-				<td class="encabezado-tabla">{{$requisicion->pedido}}</td>
-				<td class="encabezado-tabla">{{count($requisicion->insumos)}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['pedido']}}</td>
+				<td class="encabezado-tabla">{{count($acta['requisiciones'][$index]['insumos'])}}</td>
 				<td class="encabezado-tabla">{{$empresa['nombre']}}</td>
-				<td class="encabezado-tabla">{{$requisicion->dias_surtimiento}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['dias_surtimiento']}}</td>
 			</tr>
 		</thead>
 	</table>
@@ -210,17 +211,17 @@
 			</tr>
 		</thead>
 		<tbody>
-		@foreach($requisicion->insumos as $indice => $insumo)
+		@for($indice = 0, $total = count($acta['requisiciones'][$index]['insumos']); $indice < $total; $indice++)
 			<tr class="tabla-datos" style="page-break-inside:avoid;">
-				<td class="encabezado-tabla">{{$insumo->lote}}</td>
-				<td class="encabezado-tabla">{{$insumo->clave}}</td>
-				<td class="encabezado-tabla"><small>{{$insumo->descripcion}}</small></td>
-				<td class="encabezado-tabla">{{number_format($insumo->pivot->cantidad_aprovada)}}</td>
-				<td class="encabezado-tabla">{{$insumo->unidad}}</td>
-				<td class="encabezado-tabla">$ {{number_format($insumo->precio,2)}}</td>
-				<td class="encabezado-tabla">$ {{number_format($insumo->pivot->total_aprovado,2)}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['lote']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['clave']}}</td>
+				<td class="encabezado-tabla"><small>{{$acta['requisiciones'][$index]['insumos'][$indice]['descripcion']}}</small></td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['cantidad_aprovada']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['unidad']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['precio']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['total_aprovado']}}</td>
 			</tr>
-		@endforeach
+		@endfor
 		</tbody>
 	</table>
 	<table width="100%" style="page-break-inside:avoid;">
@@ -228,15 +229,15 @@
 			<tr class="tabla-datos">
 				<td colspan="4" rowspan="3" width="65%" class="encabezado-tabla texto-medio texto-centro">CONDICIONES COMERCIALES</td>
 				<th colspan="2" class="encabezado-tabla texto-derecha">SUBTOTAL</th>
-				<td class="encabezado-tabla">$ {{number_format($requisicion->sub_total_validado,2)}}</td>
+				<td class="encabezado-tabla">$ {{number_format($acta['requisiciones'][$index]['sub_total_validado'],2)}}</td>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="2" width="25%" class="encabezado-tabla texto-derecha">IVA</th>
-				<td class="encabezado-tabla">{{($requisicion->tipo_requisicion==3)?'$ '.number_format($requisicion->iva_validado,2):'SIN IVA'}}</td>
+				<td class="encabezado-tabla">{{($acta['requisiciones'][$index]['tipo_requisicion']==3)?'$ '.number_format($acta['requisiciones'][$index]['iva_validado'],2):'SIN IVA'}}</td>
 			</tr>
 			<tr class="tabla-datos">
 				<th colspan="2" class="encabezado-tabla texto-derecha">GRAN TOTAL</th>
-				<td class="encabezado-tabla">$ {{number_format($requisicion->gran_total_validado,2)}}</td>
+				<td class="encabezado-tabla">$ {{number_format($acta['requisiciones'][$index]['gran_total_validado'],2)}}</td>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla texto-justificado" colspan="7">
@@ -250,7 +251,7 @@
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla texto-justificado" colspan="7">
-					LUGAR DE ENTREGA: {{$acta->lugar_entrega}}
+					LUGAR DE ENTREGA: {{$acta['lugar_entrega']}}
 				</th>
 			</tr>
 			<tr class="tabla-datos">
@@ -278,6 +279,6 @@
 			</tr>
 		</tbody>
 	</table>
-@endforeach
+@endfor
 </body>
 </html>

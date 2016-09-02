@@ -87,7 +87,7 @@ class PedidoController extends Controller
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
                 $query->wherePivot('cantidad_aprovada','>',0);
-            }])->find($id);
+            }, 'unidadMedica'])->find($id);
 
         return Response::json([ 'data' => $acta, 'proveedores'=>$proveedores ,'oficio'=> $max_oficio+1 ],200);
     }
@@ -206,7 +206,8 @@ class PedidoController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0);
+                $query->wherePivot('cantidad_aprovada','>',0)
+                    ->orderBy('lote');
             },'proveedores'
         ])->find($id);
 
@@ -252,6 +253,7 @@ class PedidoController extends Controller
                         }
                     }
                     $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
+
                     $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
                     if($requisicion->tipo_requisicion == 3){
                         $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_aprovado*16/100;
@@ -265,7 +267,7 @@ class PedidoController extends Controller
             foreach ($pedido as $index => $proveedor) {
                 $pedido[$index]['total_letra'] = $this->transformarCantidadLetras($proveedor['gran_total']);
             }
-            $pedidos[$requisicion->pedido][] = $pedido;
+            $pedidos[$requisicion->pedido] = $pedido;
         }
         //var_dump($pedidos);die;
         //return Response::json([ 'data' => $pedidos ],200);
@@ -653,6 +655,7 @@ class PedidoController extends Controller
                                 }
                             }
                         }
+                        $requisicion->insumos()->sync([]);
                         $requisicion->insumos()->sync($insumos_sync);
                     }
                     

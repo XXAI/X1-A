@@ -99,7 +99,7 @@ class RequisicionController extends Controller
             $query->where('gran_total_validado','>',0);
         }])->find($id);
 
-        $data['acta'] = $acta;
+        //$data['acta'] = $acta;
         $empresas = Empresa::where('clave','=',$acta->empresa_clave)->get();
 
         $data['empresa'] = [
@@ -116,6 +116,29 @@ class RequisicionController extends Controller
         $acta->requisiciones->load(['insumos'=>function($query){
             $query->wherePivot('cantidad_aprovada','>',0);
         }]);
+
+        $acta = $acta->toArray();
+
+        for($i = 0, $c = count($acta['requisiciones']); $i < $c; $i++){
+            $requisicion = $acta['requisiciones'][$i];
+            for($j = 0, $d = count($requisicion['insumos']); $j < $d; $j++){
+                $req_insumo = $requisicion['insumos'][$j];
+                $insumo = [
+                    'lote'              => $req_insumo['lote'],
+                    'clave'             => $req_insumo['clave'],
+                    'descripcion'       => $req_insumo['descripcion'],
+                    'cantidad_aprovada' => number_format($req_insumo['pivot']['cantidad_aprovada']),
+                    'unidad'            => $req_insumo['unidad'],
+                    'precio'            => '$ ' . number_format($req_insumo['precio'],2),
+                    'total_aprovado'    => '$ ' . number_format($req_insumo['pivot']['total_aprovado'],2)
+                ];
+                $requisicion['insumos'][$j] = $insumo;
+            }
+            $acta['requisiciones'][$i] = $requisicion;
+        }
+
+        $data['acta'] = $acta;
+        //var_dump($acta);die;
         /*
         $acta->requisiciones->load(['insumos'=>function($query)use($empresa_clave){
             $query->select('id','pedido','requisicion','lote','clave','descripcion' ,'marca','unidad','precio',
@@ -125,7 +148,7 @@ class RequisicionController extends Controller
 
         $pdf = PDF::loadView('pdf.solicitudes', $data);
         
-        return $pdf->stream('Solicitudes-'.$acta->folio.'.pdf');
+        return $pdf->stream('Solicitudes-'.$acta['folio'].'.pdf');
     }
 
     public function generarOficioPDF($id){
