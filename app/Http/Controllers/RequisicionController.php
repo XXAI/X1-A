@@ -114,7 +114,8 @@ class RequisicionController extends Controller
 
         $empresa_clave = $data['empresa']['clave'];
         $acta->requisiciones->load(['insumos'=>function($query){
-            $query->wherePivot('cantidad_aprovada','>',0);
+            $query->wherePivot('cantidad_aprovada','>',0)
+                ->orderBy('lote');
         }]);
 
         $acta = $acta->toArray();
