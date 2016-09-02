@@ -77,7 +77,9 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues','unidadMedica','empresa')->find($id);
+        $acta = Acta::with(['requisiciones.insumos'=>function($query){
+            $query->orderBy('lote');
+        },'requisiciones.insumosClues','unidadMedica','empresa'])->find($id);
         $configuracion = Configuracion::find(1);
         $max_oficio = Acta::max('num_oficio');
         if(!$max_oficio){
@@ -259,6 +261,10 @@ class RequisicionController extends Controller
                     }
                     $requisicion->insumos()->sync([]);
                     $requisicion->insumos()->sync($insumos);
+
+                    $requisicion->sub_total_validado = Input::get('sub_total');
+                    $requisicion->iva_validado = Input::get('iva');
+                    $requisicion->gran_total_validado = Input::get('gran_total');
 
                     if(Input::get('insumos_clues')){
                         $inputs_insumos = Input::get('insumos_clues');

@@ -25,7 +25,8 @@ class PedidosExcelController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0);
+                $query->wherePivot('cantidad_aprovada','>',0)
+                    ->orderBy('lote');
             }
         ])->find($id);
 

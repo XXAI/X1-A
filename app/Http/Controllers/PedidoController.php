@@ -86,7 +86,8 @@ class PedidoController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0);
+                $query->wherePivot('cantidad_aprovada','>',0)
+                    ->orderBy('lote');
             }, 'unidadMedica'])->find($id);
 
         return Response::json([ 'data' => $acta, 'proveedores'=>$proveedores ,'oficio'=> $max_oficio+1 ],200);
@@ -267,7 +268,7 @@ class PedidoController extends Controller
             foreach ($pedido as $index => $proveedor) {
                 $pedido[$index]['total_letra'] = $this->transformarCantidadLetras($proveedor['gran_total']);
             }
-            $pedidos[$requisicion->pedido] = $pedido;
+            $pedidos[$requisicion->pedido][] = $pedido;
         }
         //var_dump($pedidos);die;
         //return Response::json([ 'data' => $pedidos ],200);
