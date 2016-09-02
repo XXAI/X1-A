@@ -77,9 +77,14 @@ class RequisicionController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id){
-        $acta = Acta::with(['requisiciones.insumos'=>function($query){
-            $query->orderBy('lote');
-        },'requisiciones.insumosClues','unidadMedica','empresa'])->find($id);
+
+        $acta = Acta::with([
+			'requisiciones'=>function($query){
+				$query->orderBy('tipo_requisicion');
+			},'requisiciones.insumos'=>function($query){
+            	$query->orderBy('lote');
+	        },'requisiciones.insumosClues','unidadMedica','empresa'])->find($id);
+
         $configuracion = Configuracion::find(1);
         $max_oficio = Acta::max('num_oficio');
         if(!$max_oficio){
