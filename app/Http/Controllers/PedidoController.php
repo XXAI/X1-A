@@ -628,7 +628,6 @@ class PedidoController extends Controller
                                 $lista_insumos[$requisicion['id']][$insumo['insumo_id']] = null;
                                 $proveedores_faltantes++;
                             }
-                            //$lista_insumos[$requisicion['id']][$insumo['insumo_id']] = (isset($insumo['proveedor_id']))?$insumo['proveedor_id']:null;
                         }
                     }
 

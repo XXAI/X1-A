@@ -380,30 +380,36 @@ class ActaController extends Controller
                 $acta->estatus = 3;
                 $acta->fecha_validacion = new DateTime();
 
-                $max_oficio = Acta::max('num_oficio');
-                $acta->num_oficio = $max_oficio+1;
-
+                //Solo si no tiene número de oficio, le generamos uno (Para casos de revalidación)
+                if(!$acta->num_oficio){
+                    $max_oficio = Acta::max('num_oficio');
+                    $acta->num_oficio = $max_oficio+1;
+                }
+                
+                //Se obtiene el numero de requisición máximo
                 $actas = Acta::where('clues',$acta->clues)->lists('id');
                 $max_requisicion = Requisicion::whereIn('acta_id',$actas)->max('numero');
                 if(!$max_requisicion){
                     $max_requisicion = 0;
                 }
 
-                /*
-                $acta->load(['requisiciones'=>function($query){
-                    $query->where('gran_total_validado','>',0);
-                }]);
-                */
+                //cargamos las requisiciones del acta
                 $acta->load('requisiciones');
                 $validados = 0;
                 $requisiciones = count($acta->requisiciones);
+                //Ciclo para checar si todas las requisiciones del acta ya fueron validadas
                 foreach ($acta->requisiciones as $requisicion) {
+                    //Si estatus es 1, ya fue validada
                     if($requisicion->estatus === 1){
                         $validados++;
                     }
+                    //Si el total validado es mayor a cero, le podemos generar un número de requisición
                     if($requisicion->gran_total_validado > 0){
-                        $max_requisicion++;
-                        $requisicion->numero = $max_requisicion;
+                        //Solo si no tiene numero de requisición, le generamos uno (Para casos de revalidación)
+                        if(!$requisicion->numero){
+                            $max_requisicion++;
+                            $requisicion->numero = $max_requisicion;
+                        }
                         if(!$requisicion->save()){
                             throw new Exception("Ocurrió un error al intenar guardar los datos de las requisiciones", 1);
                         }

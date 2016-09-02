@@ -240,11 +240,11 @@ class RequisicionController extends Controller
 
             $requisicion->estatus = Input::get('estatus');
             
-            if($requisicion->estatus == 1){
-                $requisicion->sub_total_validado = Input::get('sub_total');
-                $requisicion->iva_validado = Input::get('iva');
-                $requisicion->gran_total_validado = Input::get('gran_total');
-            }
+            //if($requisicion->estatus == 1){
+                //$requisicion->sub_total_validado = Input::get('sub_total');
+                //$requisicion->iva_validado = Input::get('iva');
+                //$requisicion->gran_total_validado = Input::get('gran_total');
+            //}
 
             if($requisicion->save()){
                 if($requisicion->estatus == 1){
@@ -262,9 +262,29 @@ class RequisicionController extends Controller
                     $requisicion->insumos()->sync([]);
                     $requisicion->insumos()->sync($insumos);
 
-                    $requisicion->sub_total_validado = Input::get('sub_total');
-                    $requisicion->iva_validado = Input::get('iva');
-                    $requisicion->gran_total_validado = Input::get('gran_total');
+                    $sub_total = $requisicion->insumos()->sum('total');
+                    $requisicion->sub_total = $sub_total;
+                    if($requisicion->tipo_requisicion == 3){
+                        $requisicion->iva = $sub_total*16/100;
+                    }else{
+                        $requisicion->iva = 0;
+                    }
+                    $requisicion->gran_total = $sub_total + $requisicion->iva;
+
+                    $sub_total = $requisicion->insumos()->sum('total_aprovado');
+                    $requisicion->sub_total_validado = $sub_total;
+                    if($requisicion->tipo_requisicion == 3){
+                        $requisicion->iva_validado = $sub_total*16/100;
+                    }else{
+                        $requisicion->iva_validado = 0;
+                    }
+                    $requisicion->gran_total_validado = $sub_total + $requisicion->iva_validado;
+                    
+                    $requisicion->save();
+
+                    //$requisicion->sub_total_validado = Input::get('sub_total');
+                    //$requisicion->iva_validado = Input::get('iva');
+                    //$requisicion->gran_total_validado = Input::get('gran_total');
 
                     if(Input::get('insumos_clues')){
                         $inputs_insumos = Input::get('insumos_clues');
