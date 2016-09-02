@@ -138,6 +138,8 @@ return [
 		'Illuminate\Broadcasting\BroadcastServiceProvider',
 		'Barryvdh\DomPDF\ServiceProvider',
 		'Barryvdh\Cors\ServiceProvider',
+
+		Maatwebsite\Excel\ExcelServiceProvider::class,
 		
 		/*
 		 * Application Service Providers...
@@ -196,6 +198,7 @@ return [
 		'Validator' => 'Illuminate\Support\Facades\Validator',
 		'View'      => 'Illuminate\Support\Facades\View',
 		'PDF' 		=> Barryvdh\DomPDF\Facade::class,
+		'Excel' => Maatwebsite\Excel\Facades\Excel::class,
 
 	],
 
