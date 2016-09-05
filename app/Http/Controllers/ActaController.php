@@ -427,12 +427,37 @@ class ActaController extends Controller
 
             if(!$acta->save()){
                 throw new Exception("Ocurrió un error al intenar guardar los datos del acta", 1);
+            }else{
+                if($acta->estatus == 3){
+                    DB::rollBack();
+                    return $this->actualizarUnidades($acta->folio);
+                }
             }
 
             DB::commit();
             return Response::json([ 'data' => $acta ],200);
         } catch (\Exception $e) {
             DB::rollBack();
+            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+        }
+    }
+
+    public function actualizarUnidades($folio){
+        try{
+            $acta_central = Acta::with('requisiciones')->where('folio',$folio)->first();
+
+            $conexion_remota = DB::connection('mysql_sync');
+            $conexion_remota->beginTransaction();
+
+            $acta_unidad = new Acta();
+            $acta_unidad = $acta_unidad->setConnection('mysql_sync');
+            $acta_unidad = $acta_unidad->where('folio',$folio)->first();
+
+            $conexion_remota->commit();
+
+            return Response::json(['acta_central'=>$acta_central,'acta_unidad'=>$acta_unidad],200);
+        }catch(\Exception $e){
+            $conexion_remota->rollback();
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
