@@ -205,10 +205,10 @@
 				<td class="encabezado-tabla">{{$insumo->lote}}</td>
 				<td class="encabezado-tabla">{{$insumo->clave}}</td>
 				<td class="encabezado-tabla">{{$insumo->descripcion}}</td>
-				<td class="encabezado-tabla">{{number_format($insumo->pivot->cantidad_aprovada)}}</td>
+				<td class="encabezado-tabla">{{number_format($insumo->pivot->cantidad_validada)}}</td>
 				<td class="encabezado-tabla">{{$insumo->unidad}}</td>
 				<td class="encabezado-tabla">$ {{number_format($insumo->precio,2)}}</td>
-				<td class="encabezado-tabla">$ {{number_format($insumo->pivot->total_aprovado,2)}}</td>
+				<td class="encabezado-tabla">$ {{number_format($insumo->pivot->total_validado,2)}}</td>
 			</tr>
 		@endforeach
 		</tbody>

@@ -262,10 +262,10 @@
 				<td class="linea-tabla texto-centro">
 					<div style="page-break-inside:avoid;"><small>{{$insumo['descripcion']}}</small></div>
 				</td>
-				<td class="linea-tabla texto-centro">{{number_format($insumo['pivot']['cantidad_aprovada'])}}</td>
+				<td class="linea-tabla texto-centro">{{number_format($insumo['pivot']['cantidad_validada'])}}</td>
 				<td class="linea-tabla texto-centro">{{$insumo['unidad']}}</td>
 				<td class="linea-tabla texto-centro">$ {{number_format($insumo['precio'],2)}}</td>
-				<td class="linea-tabla texto-centro">$ {{number_format($insumo['pivot']['total_aprovado'],2)}}</td>
+				<td class="linea-tabla texto-centro">$ {{number_format($insumo['pivot']['total_validado'],2)}}</td>
 			</tr>
 		@endforeach
 

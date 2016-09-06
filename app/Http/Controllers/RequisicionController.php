@@ -121,7 +121,7 @@ class RequisicionController extends Controller
 
         $empresa_clave = $data['empresa']['clave'];
         $acta->requisiciones->load(['insumos'=>function($query){
-            $query->wherePivot('cantidad_aprovada','>',0)
+            $query->wherePivot('cantidad_validada','>',0)
                 ->orderBy('lote');
         }]);
 
@@ -135,10 +135,10 @@ class RequisicionController extends Controller
                     'lote'              => $req_insumo['lote'],
                     'clave'             => $req_insumo['clave'],
                     'descripcion'       => $req_insumo['descripcion'],
-                    'cantidad_aprovada' => number_format($req_insumo['pivot']['cantidad_aprovada']),
+                    'cantidad_validada' => number_format($req_insumo['pivot']['cantidad_validada']),
                     'unidad'            => $req_insumo['unidad'],
                     'precio'            => '$ ' . number_format($req_insumo['precio'],2),
-                    'total_aprovado'    => '$ ' . number_format($req_insumo['pivot']['total_aprovado'],2)
+                    'total_validado'    => '$ ' . number_format($req_insumo['pivot']['total_validado'],2)
                 ];
                 $requisicion['insumos'][$j] = $insumo;
             }
@@ -260,8 +260,8 @@ class RequisicionController extends Controller
                             'insumo_id' => $req_insumo['insumo_id'],
                             'cantidad' => $req_insumo['cantidad'],
                             'total' => $req_insumo['total'],
-                            'cantidad_aprovada' => $req_insumo['cantidad_aprovada'],
-                            'total_aprovado' => $req_insumo['total_aprovado']
+                            'cantidad_validada' => $req_insumo['cantidad_validada'],
+                            'total_validado' => $req_insumo['total_validado']
                         ];
                     }
                     $requisicion->insumos()->sync([]);
@@ -276,7 +276,7 @@ class RequisicionController extends Controller
                     }
                     $requisicion->gran_total = $sub_total + $requisicion->iva;
 
-                    $sub_total = $requisicion->insumos()->sum('total_aprovado');
+                    $sub_total = $requisicion->insumos()->sum('total_validado');
                     $requisicion->sub_total_validado = $sub_total;
                     if($requisicion->tipo_requisicion == 3){
                         $requisicion->iva_validado = $sub_total*16/100;
@@ -299,8 +299,8 @@ class RequisicionController extends Controller
                                 'insumo_id' => $req_insumo['insumo_id'],
                                 'cantidad' => $req_insumo['cantidad'],
                                 'total' => $req_insumo['total'],
-                                'cantidad_validada' => $req_insumo['cantidad_aprovada'],
-                                'total_validado' => $req_insumo['total_aprovado'],
+                                'cantidad_validada' => $req_insumo['cantidad_validada'],
+                                'total_validado' => $req_insumo['total_validado'],
                                 'clues' => $req_insumo['clues']
                             ];
                         }

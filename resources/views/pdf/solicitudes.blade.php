@@ -216,10 +216,10 @@
 				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['lote']}}</td>
 				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['clave']}}</td>
 				<td class="encabezado-tabla"><small>{{$acta['requisiciones'][$index]['insumos'][$indice]['descripcion']}}</small></td>
-				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['cantidad_aprovada']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['cantidad_validada']}}</td>
 				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['unidad']}}</td>
 				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['precio']}}</td>
-				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['total_aprovado']}}</td>
+				<td class="encabezado-tabla">{{$acta['requisiciones'][$index]['insumos'][$indice]['total_validado']}}</td>
 			</tr>
 		@endfor
 		</tbody>

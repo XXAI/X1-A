@@ -178,8 +178,8 @@ class ActaController extends Controller
                                 'insumo_id' => $req_insumo['id'],
                                 'cantidad' => $req_insumo['pivot']['cantidad'],
                                 'total' => $req_insumo['pivot']['total'],
-                                'cantidad_aprovada' => $req_insumo['pivot']['cantidad'],
-                                'total_aprovado' => $req_insumo['pivot']['total']
+                                'cantidad_validada' => $req_insumo['pivot']['cantidad'],
+                                'total_validado' => $req_insumo['pivot']['total']
                             ];
                         }
                         $requisicion->insumos()->sync($insumos);
@@ -429,8 +429,10 @@ class ActaController extends Controller
                 throw new Exception("Ocurrió un error al intenar guardar los datos del acta", 1);
             }else{
                 if($acta->estatus == 3){
-                    DB::rollBack();
-                    return $this->actualizarUnidades($acta->folio);
+                    //DB::rollBack();
+                    if(!$this->actualizarUnidades($acta->folio)){
+                        throw new Exception("Error al actualizar", 1);
+                    }
                 }
             }
 
@@ -444,21 +446,129 @@ class ActaController extends Controller
 
     public function actualizarUnidades($folio){
         try{
-            $acta_central = Acta::with('requisiciones')->where('folio',$folio)->first();
+            $acta_central = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->where('folio',$folio)->first();
+
+            $default = DB::getPdo(); // Default conn
+            $secondary = DB::connection('mysql_sync')->getPdo();
+
+            DB::setPdo($secondary);
 
             $conexion_remota = DB::connection('mysql_sync');
             $conexion_remota->beginTransaction();
 
             $acta_unidad = new Acta();
             $acta_unidad = $acta_unidad->setConnection('mysql_sync');
-            $acta_unidad = $acta_unidad->where('folio',$folio)->first();
+            $acta_unidad = $acta_unidad->with('requisiciones.insumos','requisiciones.insumosClues')->where('folio',$folio)->first();
+
+            $acta_unidad->fecha_validacion = $acta_central->fecha_validacion;
+            $acta_unidad->estatus = $acta_central->estatus;
+
+            if($acta_unidad->save()){
+                $requisiciones_validadas = [];
+                foreach ($acta_central->requisiciones as $requisicion) {
+                    $tipo_requisicion = $requisicion->tipo_requisicion;
+
+                    $requisiciones_validadas[$tipo_requisicion] = [
+                        'estatus' => $requisicion->estatus,
+                        'numero' => $requisicion->numero,
+                        'sub_total_validado' => 0,
+                        'lotes' => 0,
+                        'insumos' => [],
+                        'insumos_clues' => []
+                    ];
+                    if(count($requisicion->insumos)){
+                        $insumos = [];
+                        foreach ($requisicion->insumos as $req_insumo) {
+                            $insumos[$req_insumo->llave] = [
+                                'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
+                                'total_validado' => $req_insumo->pivot->total_validado
+                            ];
+                            $requisiciones_validadas[$tipo_requisicion]['sub_total_validado'] += $req_insumo->pivot->total_validado;
+                        }
+                        $requisiciones_validadas[$tipo_requisicion]['insumos'] = $insumos;
+                        $requisiciones_validadas[$tipo_requisicion]['lotes'] = count($insumos);
+                    }
+
+                    if(count($requisicion->insumosClues)){
+                        $insumos = [];
+                        foreach ($requisicion->insumosClues as $req_insumo) {
+                            $insumos[$req_insumo->llave .'.'.$requisicion->pivot->clues] = [
+                                'clues' => $req_insumo->pivot->clues,
+                                'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
+                                'total_validado' => $req_insumo->pivot->total_validado
+                            ];
+                        }
+                        $requisiciones_validadas[$tipo_requisicion]['insumos_clues'] = $insumos;
+                    }
+                }
+
+                foreach ($acta_unidad->requisiciones as $requisicion) {
+                    if(isset($requisiciones_validadas[$requisicion->tipo_requisicion])){
+                        $requisicion_import = $requisiciones_validadas[$requisicion->tipo_requisicion];
+
+                        $requisicion->estatus = $requisicion_import['estatus'];
+                        $requisicion->numero = $requisicion_import['numero'];
+                        $requisicion->lotes = $requisicion_import['lotes'];
+                        $requisicion->sub_total_validado = $requisicion_import['sub_total_validado'];
+                        if($requisicion->tipo_requisicion == 3){
+                            $requisicion->iva_validado = $requisicion->sub_total_validado*16/100;
+                        }else{
+                            $requisicion->iva_validado = 0;
+                        }
+                        $requisicion->gran_total_validado = $requisicion->sub_total_validado + $requisicion->iva_validado;
+
+                        //check this out
+                        if($requisicion->save()){
+                            $insumos_sync = [];
+                            foreach ($requisicion->insumos as $insumo) {
+                                $nuevo_insumo = [
+                                    'insumo_id' => $insumo->id,
+                                    'cantidad' => $insumo->pivot->cantidad,
+                                    'total' => $insumo->pivot->total
+                                ];
+                                if(isset($requisicion_import['insumos'][$insumo->llave])){
+                                    $insumo_import = $requisicion_import['insumos'][$insumo->llave];
+                                    $nuevo_insumo['total_validado'] = $insumo_import['total_validado'];
+                                    $nuevo_insumo['cantidad_validada'] = $insumo_import['cantidad_validada'];
+                                }
+                                $insumos_sync[] = $nuevo_insumo;
+                            }
+                            $requisicion->insumos()->sync([]);
+                            $requisicion->insumos()->sync($insumos_sync);
+
+                            $insumos_clues_sync = [];
+                            foreach ($requisicion->insumosClues as $insumo) {
+                                $nuevo_insumo = [
+                                    'insumo_id' => $insumo->id,
+                                    'clues' => $insumo->pivot->clues,
+                                    'cantidad' => $insumo->pivot->cantidad,
+                                    'total' => $insumo->pivot->total
+                                ];
+                                if(isset($requisicion_import['insumos_clues'][$insumo->llave.'.'.$insumo->pivot->clues])){
+                                    $insumo_import = $requisicion_import['insumos_clues'][$insumo->llave.'.'.$insumo->pivot->clues];
+                                    $nuevo_insumo['total_validado'] = $insumo_import['total_validado'];
+                                    $nuevo_insumo['cantidad_validada'] = $insumo_import['cantidad_validada'];
+                                }
+                                $insumos_clues_sync[] = $nuevo_insumo;
+                            }
+                            $requisicion->insumosClues()->sync([]);
+                            $requisicion->insumosClues()->sync($insumos_clues_sync);
+                        }
+                    }
+                }
+            }
 
             $conexion_remota->commit();
 
-            return Response::json(['acta_central'=>$acta_central,'acta_unidad'=>$acta_unidad],200);
+            DB::setPdo($default);
+
+            return true;
+            //return Response::json(['acta_central'=>$acta_central,'acta_unidad'=>$acta_unidad],200);
         }catch(\Exception $e){
             $conexion_remota->rollback();
-            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+            DB::setPdo($default);
+            return false;
+            //return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
 }

@@ -25,7 +25,7 @@ class PedidosExcelController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0)
+                $query->wherePivot('cantidad_validada','>',0)
                     ->orderBy('lote');
             }
         ])->find($id);
@@ -66,14 +66,14 @@ class PedidosExcelController extends Controller
                         }
                     }
                     $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
-                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
+                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_validado;
                     if($requisicion->tipo_requisicion == 3){
-                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_aprovado*16/100;
-                        $iva = $insumo->pivot->total_aprovado*16/100;
+                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_validado*16/100;
+                        $iva = $insumo->pivot->total_validado*16/100;
                     }else{
                         $iva = 0;
                     }
-                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_aprovado;
+                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_validado;
                 }
             }
             
@@ -177,10 +177,10 @@ class PedidosExcelController extends Controller
                                     $insumo['lote'], 
                                     $insumo['clave'],
                                     $insumo['descripcion'],
-                                    $insumo['pivot']['cantidad_aprovada'],
+                                    $insumo['pivot']['cantidad_validada'],
                                     $insumo['unidad'],
                                     $insumo['precio'],
-                                    $insumo['pivot']['total_aprovado']
+                                    $insumo['pivot']['total_validado']
                                 ));
                                 $contador_filas += 1;
                             }

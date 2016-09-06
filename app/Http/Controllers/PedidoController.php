@@ -86,7 +86,7 @@ class PedidoController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0)
+                $query->wherePivot('cantidad_validada','>',0)
                     ->orderBy('lote');
             }, 'unidadMedica'])->find($id);
 
@@ -100,7 +100,7 @@ class PedidoController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0);
+                $query->wherePivot('cantidad_validada','>',0);
             },'proveedores'
         ])->find($id);
 
@@ -207,7 +207,7 @@ class PedidoController extends Controller
             'requisiciones'=>function($query){
                 $query->where('gran_total_validado','>',0);
             },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_aprovada','>',0)
+                $query->wherePivot('cantidad_validada','>',0)
                     ->orderBy('lote');
             },'proveedores'
         ])->find($id);
@@ -255,14 +255,14 @@ class PedidoController extends Controller
                     }
                     $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
 
-                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_aprovado;
+                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_validado;
                     if($requisicion->tipo_requisicion == 3){
-                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_aprovado*16/100;
-                        $iva = $insumo->pivot->total_aprovado*16/100;
+                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_validado*16/100;
+                        $iva = $insumo->pivot->total_validado*16/100;
                     }else{
                         $iva = 0;
                     }
-                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_aprovado;
+                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_validado;
                 }
             }
             foreach ($pedido as $index => $proveedor) {
@@ -586,7 +586,7 @@ class PedidoController extends Controller
                 'requisiciones'=>function($query){
                     $query->where('gran_total_validado','>',0);
                 },'requisiciones.insumos'=>function($query){
-                    $query->wherePivot('cantidad_aprovada','>',0);
+                    $query->wherePivot('cantidad_validada','>',0);
                 }
             ])->find($id);
 
@@ -645,8 +645,8 @@ class PedidoController extends Controller
                                 'insumo_id' => $req_insumo->pivot->insumo_id,
                                 'cantidad' => $req_insumo->pivot->cantidad,
                                 'total' => $req_insumo->pivot->total,
-                                'cantidad_aprovada' => $req_insumo->pivot->cantidad_aprovada,
-                                'total_aprovado' => $req_insumo->pivot->total_aprovado,
+                                'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
+                                'total_validado' => $req_insumo->pivot->total_validado,
                                 'proveedor_id' => (isset($insumos_form[$req_insumo->pivot->insumo_id]))?$insumos_form[$req_insumo->pivot->insumo_id]:null
                             ];
                             if(isset($insumos_form[$req_insumo->pivot->insumo_id])){
