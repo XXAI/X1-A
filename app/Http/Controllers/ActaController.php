@@ -427,19 +427,41 @@ class ActaController extends Controller
 
             if(!$acta->save()){
                 throw new Exception("Ocurrió un error al intenar guardar los datos del acta", 1);
-            }else{
-                if($acta->estatus == 3){
-                    //DB::rollBack();
-                    if(!$this->actualizarUnidades($acta->folio)){
-                        throw new Exception("Error al actualizar", 1);
-                    }
+            }
+            DB::commit();
+
+            if($acta->estatus == 3){
+                //DB::rollBack();
+                $resultado = $this->actualizarUnidades($acta->folio);
+                if(!$resultado['estatus']){
+                    return Response::json(['error' => 'Error al intentar sincronizar el acta', 'error_type' => 'data_validation', 'message'=>$resultado['message']], HttpResponse::HTTP_CONFLICT);
                 }
+                $acta = Acta::find($id);
             }
 
-            DB::commit();
             return Response::json([ 'data' => $acta ],200);
         } catch (\Exception $e) {
             DB::rollBack();
+            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+        }
+    }
+
+    public function sincronizar($id){
+        try {
+            $acta = Acta::find($id);
+            if(!$acta){
+                return Response::json(['error' => 'Acta no encontrada.', 'error_type' => 'data_validation'], HttpResponse::HTTP_CONFLICT);
+            }
+            if($acta->estatus == 3){
+                //DB::rollBack();
+                $resultado = $this->actualizarUnidades($acta->folio);
+                if(!$resultado['estatus']){
+                    return Response::json(['error' => 'Error al intentar sincronizar el acta', 'error_type' => 'data_validation', 'message'=>$resultado['message']], HttpResponse::HTTP_CONFLICT);
+                }
+                $acta = Acta::find($id);
+            }
+            return Response::json([ 'data' => $acta ],200);
+        } catch (\Exception $e) {
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
@@ -451,10 +473,13 @@ class ActaController extends Controller
             $default = DB::getPdo(); // Default conn
             $secondary = DB::connection('mysql_sync')->getPdo();
 
-            DB::setPdo($secondary);
+            $stamp_validacion = new DateTime();
 
-            $conexion_remota = DB::connection('mysql_sync');
-            $conexion_remota->beginTransaction();
+            DB::setPdo($secondary);
+            DB::beginTransaction();
+
+            //$conexion_remota = DB::connection('mysql_sync');
+            //$conexion_remota->beginTransaction();
 
             $acta_unidad = new Acta();
             $acta_unidad = $acta_unidad->setConnection('mysql_sync');
@@ -462,6 +487,8 @@ class ActaController extends Controller
 
             $acta_unidad->fecha_validacion = $acta_central->fecha_validacion;
             $acta_unidad->estatus = $acta_central->estatus;
+            $acta_unidad->estatus_sincronizacion = 2;
+            $acta_unidad->sincronizado_validacion = $stamp_validacion;
 
             if($acta_unidad->save()){
                 $requisiciones_validadas = [];
@@ -558,16 +585,21 @@ class ActaController extends Controller
                 }
             }
 
-            $conexion_remota->commit();
-
+            //$conexion_remota->commit();
+            DB::commit();
             DB::setPdo($default);
 
-            return true;
+            $acta_central->estatus_sincronizacion = 2;
+            $acta_central->sincronizado_validacion = $stamp_validacion;
+            $acta_central->save();
+
+            return ['estatus'=>true];
             //return Response::json(['acta_central'=>$acta_central,'acta_unidad'=>$acta_unidad],200);
         }catch(\Exception $e){
-            $conexion_remota->rollback();
+            //$conexion_remota->rollback();
+            DB::rollBack();
             DB::setPdo($default);
-            return false;
+            return ['estatus'=>false,'message'=>$e->getMessage()];
             //return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
