@@ -60,7 +60,10 @@ class RequisicionController extends Controller
             $recurso = $recurso->with('UnidadMedica','requisiciones')
                                 ->skip(($pagina-1)*$elementos_por_pagina)
                                 ->take($elementos_por_pagina)
-                                ->orderBy('id','desc')->get();
+                                ->orderBy('estatus','asc')
+                                ->orderBy('estatus_sincronizacion','asc')
+                                ->orderBy('fecha_importacion','desc')
+                                ->get();
 
             //$queries = DB::getQueryLog();
             //$last_query = end($queries);
