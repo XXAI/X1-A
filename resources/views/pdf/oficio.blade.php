@@ -86,7 +86,7 @@
 		    position: fixed;
 		}
 		.header {
-		    top: -15.0em;
+		    top: -12.5em;
 		}
 		.footer {
 		    bottom: 0px;

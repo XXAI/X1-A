@@ -452,7 +452,7 @@ class ActaController extends Controller
             if(!$acta){
                 return Response::json(['error' => 'Acta no encontrada.', 'error_type' => 'data_validation'], HttpResponse::HTTP_CONFLICT);
             }
-            if($acta->estatus == 3){
+            if($acta->estatus >= 3){
                 //DB::rollBack();
                 $resultado = $this->actualizarUnidades($acta->folio);
                 if(!$resultado['estatus']){
@@ -508,7 +508,8 @@ class ActaController extends Controller
                         foreach ($requisicion->insumos as $req_insumo) {
                             $insumos[$req_insumo->llave] = [
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
-                                'total_validado' => $req_insumo->pivot->total_validado
+                                'total_validado' => $req_insumo->pivot->total_validado,
+                                'proveedor_id' => $req_insumo->pivot->proveedor_id
                             ];
                             $requisiciones_validadas[$tipo_requisicion]['sub_total_validado'] += $req_insumo->pivot->total_validado;
                         }
@@ -519,7 +520,7 @@ class ActaController extends Controller
                     if(count($requisicion->insumosClues)){
                         $insumos = [];
                         foreach ($requisicion->insumosClues as $req_insumo) {
-                            $insumos[$req_insumo->llave .'.'.$requisicion->pivot->clues] = [
+                            $insumos[$req_insumo->llave .'.'.$req_insumo->pivot->clues] = [
                                 'clues' => $req_insumo->pivot->clues,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
                                 'total_validado' => $req_insumo->pivot->total_validado
@@ -557,6 +558,7 @@ class ActaController extends Controller
                                     $insumo_import = $requisicion_import['insumos'][$insumo->llave];
                                     $nuevo_insumo['total_validado'] = $insumo_import['total_validado'];
                                     $nuevo_insumo['cantidad_validada'] = $insumo_import['cantidad_validada'];
+                                    $nuevo_insumo['proveedor_id'] = $insumo_import['proveedor_id'];
                                 }
                                 $insumos_sync[] = $nuevo_insumo;
                             }
@@ -599,7 +601,7 @@ class ActaController extends Controller
             //$conexion_remota->rollback();
             DB::rollBack();
             DB::setPdo($default);
-            return ['estatus'=>false,'message'=>$e->getMessage()];
+            return ['estatus'=>false,'message'=>$e->getMessage().' line:'.$e->getLine()];
             //return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
