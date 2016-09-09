@@ -158,6 +158,12 @@ class RequisicionController extends Controller
         */
 
         $pdf = PDF::loadView('pdf.solicitudes', $data);
+        $pdf->output();
+        $dom_pdf = $pdf->getDomPDF();
+        $canvas = $dom_pdf->get_canvas();
+        $w = $canvas->get_width();
+        $h = $canvas->get_height();
+        $canvas->page_text(($w/2)-10, ($h-40), "{PAGE_NUM} de {PAGE_COUNT}", null, 10, array(0, 0, 0));
         
         return $pdf->stream('Solicitudes-'.$acta['folio'].'.pdf');
     }

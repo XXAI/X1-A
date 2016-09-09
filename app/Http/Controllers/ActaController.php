@@ -281,6 +281,13 @@ class ActaController extends Controller
         $data['empresa_clave'] = $empresa->clave;
 
         $pdf = PDF::loadView('pdf.requisiciones', $data);
+        $pdf->output();
+        $dom_pdf = $pdf->getDomPDF();
+        $canvas = $dom_pdf->get_canvas();
+        $w = $canvas->get_width();
+        $h = $canvas->get_height();
+        $canvas->page_text(($w/2)-10, ($h-40), "{PAGE_NUM} de {PAGE_COUNT}", null, 10, array(0, 0, 0));
+        
         return $pdf->stream($data['acta']->folio.'Requisiciones.pdf');
     }
 
@@ -491,6 +498,8 @@ class ActaController extends Controller
             $acta_unidad->sincronizado_validacion = $stamp_validacion;
 
             if($acta_unidad->save()){
+                $requisiciones_unidad = $acta_unidad->requisiciones->lists('id','tipo_requisicion');
+
                 $requisiciones_validadas = [];
                 foreach ($acta_central->requisiciones as $requisicion) {
                     $tipo_requisicion = $requisicion->tipo_requisicion;
@@ -499,19 +508,25 @@ class ActaController extends Controller
                         'estatus' => $requisicion->estatus,
                         'numero' => $requisicion->numero,
                         'sub_total_validado' => 0,
+                        'sub_total' => 0,
                         'lotes' => 0,
                         'insumos' => [],
                         'insumos_clues' => []
                     ];
+
                     if(count($requisicion->insumos)){
                         $insumos = [];
                         foreach ($requisicion->insumos as $req_insumo) {
                             $insumos[$req_insumo->llave] = [
+                                'insumo_id' => $req_insumo->id,
+                                'cantidad' => $req_insumo->pivot->cantidad,
+                                'total' => $req_insumo->pivot->total,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
                                 'total_validado' => $req_insumo->pivot->total_validado,
                                 'proveedor_id' => $req_insumo->pivot->proveedor_id
                             ];
                             $requisiciones_validadas[$tipo_requisicion]['sub_total_validado'] += $req_insumo->pivot->total_validado;
+                            $requisiciones_validadas[$tipo_requisicion]['sub_total'] += $req_insumo->pivot->total;
                         }
                         $requisiciones_validadas[$tipo_requisicion]['insumos'] = $insumos;
                         $requisiciones_validadas[$tipo_requisicion]['lotes'] = count($insumos);
@@ -521,12 +536,48 @@ class ActaController extends Controller
                         $insumos = [];
                         foreach ($requisicion->insumosClues as $req_insumo) {
                             $insumos[$req_insumo->llave .'.'.$req_insumo->pivot->clues] = [
+                                'insumo_id' => $req_insumo->id,
+                                'cantidad' => $req_insumo->pivot->cantidad,
+                                'total' => $req_insumo->pivot->total,
                                 'clues' => $req_insumo->pivot->clues,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
                                 'total_validado' => $req_insumo->pivot->total_validado
                             ];
                         }
                         $requisiciones_validadas[$tipo_requisicion]['insumos_clues'] = $insumos;
+                    }
+
+                    //Crear requisiciones encontradas en la base de datos central pero no en las unidades.
+                    if(!isset($requisiciones_unidad[$tipo_requisicion])){
+                        $sub_total = $requisiciones_validadas[$tipo_requisicion]['sub_total'];
+                        $sub_total_validado = $requisiciones_validadas[$tipo_requisicion]['sub_total_validado'];
+                        if($tipo_requisicion == 3){
+                            $iva = $sub_total*16/100;
+                            $iva_validado = $sub_total_validado*16/100;
+                        }else{
+                            $iva = 0;
+                            $iva_validado = 0;
+                        }
+                        $nueva_requisicion = new Requisicion();
+                        $nueva_requisicion->numero              = $requisicion->numero;
+                        $nueva_requisicion->estatus             = $requisicion->estatus;
+                        $nueva_requisicion->pedido              = $requisicion->pedido;
+                        $nueva_requisicion->lotes               = $requisiciones_validadas[$tipo_requisicion]['lotes'];
+                        $nueva_requisicion->empresa             = $acta_unidad->empresa;
+                        $nueva_requisicion->tipo_requisicion    = $requisicion->tipo_requisicion;
+                        $nueva_requisicion->dias_surtimiento    = 15;
+                        $nueva_requisicion->sub_total           = $sub_total;
+                        $nueva_requisicion->gran_total          = $sub_total + $iva;
+                        $nueva_requisicion->iva                 = $iva;
+                        $nueva_requisicion->sub_total_validado  = $sub_total_validado;
+                        $nueva_requisicion->gran_total_validado = $sub_total_validado + $iva_validado;
+                        $nueva_requisicion->iva_validado        = $iva_validado;
+
+                        $acta_unidad->requisiciones()->save($nueva_requisicion);
+
+                        $nueva_requisicion->insumos()->sync($requisiciones_validadas[$tipo_requisicion]['insumos']);
+                        $nueva_requisicion->insumosClues()->sync($requisiciones_validadas[$tipo_requisicion]['insumos_clues']);
+
                     }
                 }
 
@@ -553,6 +604,8 @@ class ActaController extends Controller
                                     'insumo_id' => $insumo->id,
                                     'cantidad' => $insumo->pivot->cantidad,
                                     'total' => $insumo->pivot->total
+                                    //'cantidad_validada' => 0, //<- aqui para evitar los null
+                                    //'total_validado' => 0 //<- aqui para evitar los null
                                 ];
                                 if(isset($requisicion_import['insumos'][$insumo->llave])){
                                     $insumo_import = $requisicion_import['insumos'][$insumo->llave];
@@ -601,7 +654,7 @@ class ActaController extends Controller
             //$conexion_remota->rollback();
             DB::rollBack();
             DB::setPdo($default);
-            return ['estatus'=>false,'message'=>$e->getMessage().' line:'.$e->getLine()];
+            return ['estatus'=>false,'message'=>$e->getMessage().'. line:'.$e->getLine()];
             //return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
