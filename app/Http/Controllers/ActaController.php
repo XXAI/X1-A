@@ -497,6 +497,8 @@ class ActaController extends Controller
             $acta_unidad->estatus_sincronizacion = 2;
             $acta_unidad->sincronizado_validacion = $stamp_validacion;
 
+            $insumos_nuevos_central = [];
+            $insumos_clues_nuevos_central = [];
             if($acta_unidad->save()){
                 $requisiciones_unidad = $acta_unidad->requisiciones->lists('id','tipo_requisicion');
 
@@ -612,6 +614,19 @@ class ActaController extends Controller
                                     $nuevo_insumo['total_validado'] = $insumo_import['total_validado'];
                                     $nuevo_insumo['cantidad_validada'] = $insumo_import['cantidad_validada'];
                                     $nuevo_insumo['proveedor_id'] = $insumo_import['proveedor_id'];
+                                }else{ //Si el insumo no esta en los datos de oficina central se llenan a 0 y se guardan en central
+                                    $nuevo_insumo['total_validado'] = 0;
+                                    $nuevo_insumo['cantidad_validada'] = 0;
+                                    if(!isset($insumos_nuevos_central[$requisicion->tipo_requisicion])){
+                                        $insumos_nuevos_central[$requisicion->tipo_requisicion] = [];
+                                    }
+                                    $insumos_nuevos_central[$requisicion->tipo_requisicion][] = [
+                                        'insumo_id' => $insumo->id,
+                                        'cantidad' => $insumo->pivot->cantidad,
+                                        'total' => $insumo->pivot->total,
+                                        'cantidad_validada' => 0,
+                                        'total_validado' => 0
+                                    ];
                                 }
                                 $insumos_sync[] = $nuevo_insumo;
                             }
@@ -630,6 +645,20 @@ class ActaController extends Controller
                                     $insumo_import = $requisicion_import['insumos_clues'][$insumo->llave.'.'.$insumo->pivot->clues];
                                     $nuevo_insumo['total_validado'] = $insumo_import['total_validado'];
                                     $nuevo_insumo['cantidad_validada'] = $insumo_import['cantidad_validada'];
+                                }else{ //Si el insumo no esta en los datos de oficina central se llenan a 0 y se guardan en central
+                                    $nuevo_insumo['total_validado'] = 0;
+                                    $nuevo_insumo['cantidad_validada'] = 0;
+                                    if(!isset($insumos_clues_nuevos_central[$requisicion->tipo_requisicion])){
+                                        $insumos_clues_nuevos_central[$requisicion->tipo_requisicion] = [];
+                                    }
+                                    $insumos_clues_nuevos_central[$requisicion->tipo_requisicion][] = [
+                                        'insumo_id' => $insumo->id,
+                                        'clues' => $insumo->pivot->clues,
+                                        'cantidad' => $insumo->pivot->cantidad,
+                                        'total' => $insumo->pivot->total,
+                                        'cantidad_validada' => 0,
+                                        'total_validado' => 0
+                                    ];
                                 }
                                 $insumos_clues_sync[] = $nuevo_insumo;
                             }
@@ -644,9 +673,52 @@ class ActaController extends Controller
             DB::commit();
             DB::setPdo($default);
 
+            DB::beginTransaction();
+
             $acta_central->estatus_sincronizacion = 2;
             $acta_central->sincronizado_validacion = $stamp_validacion;
             $acta_central->save();
+
+            //Agregamos a central los insumos que no encontramos en central pero si en unidades
+            foreach ($acta_central->requisiciones as $requisicion) {
+                if(count($insumos_nuevos_central)){
+                    if(isset($insumos_nuevos_central[$requisicion->tipo_requisicion])){
+                        $insumos = $insumos_nuevos_central[$requisicion->tipo_requisicion];
+                        foreach ($requisicion->insumos as $req_insumo) {
+                            $insumos[] = [
+                                'insumo_id' => $req_insumo->id,
+                                'cantidad' => $req_insumo->pivot->cantidad,
+                                'total' => $req_insumo->pivot->total,
+                                'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
+                                'total_validado' => $req_insumo->pivot->total_validado,
+                                'proveedor_id' => $req_insumo->pivot->proveedor_id
+                            ];
+                        }
+                        $requisicion->insumos()->sync([]);
+                        $requisicion->insumos()->sync($insumos);
+                    }
+                }
+                if(count($insumos_clues_nuevos_central)){
+                    if(isset($insumos_clues_nuevos_central[$requisicion->tipo_requisicion])){
+                        $insumos = $insumos_clues_nuevos_central[$requisicion->tipo_requisicion];
+                        foreach ($requisicion->insumosClues as $req_insumo) {
+                            $insumos[] = [
+                                'insumo_id' => $req_insumo->id,
+                                'clues' => $req_insumo->pivot->clues,
+                                'cantidad' => $req_insumo->pivot->cantidad,
+                                'total' => $req_insumo->pivot->total,
+                                'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
+                                'total_validado' => $req_insumo->pivot->total_validado,
+                                'proveedor_id' => $req_insumo->pivot->proveedor_id
+                            ];
+                        }
+                        $requisicion->insumosClues()->sync([]);
+                        $requisicion->insumosClues()->sync($insumos);
+                    }
+                }
+            }
+            
+            DB::commit();
 
             return ['estatus'=>true];
             //return Response::json(['acta_central'=>$acta_central,'acta_unidad'=>$acta_unidad],200);
