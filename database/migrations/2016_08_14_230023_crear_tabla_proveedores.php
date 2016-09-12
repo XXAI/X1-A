@@ -18,7 +18,7 @@ class CrearTablaProveedores extends Migration
             $table->string('direccion',255)->nullable();
             $table->string('ciudad',255)->nullable();
             $table->string('contacto',255)->nullable();
-            $table->string('cargo_contaccto',255)->nullable();
+            $table->string('cargo_contacto',255)->nullable();
             $table->string('telefono',20)->nullable();
             $table->string('cel',20)->nullable();
             $table->string('email',255)->nullable();
