@@ -492,6 +492,27 @@ class ActaController extends Controller
             $acta_unidad = $acta_unidad->setConnection('mysql_sync');
             $acta_unidad = $acta_unidad->with('requisiciones.insumos','requisiciones.insumosClues')->where('folio',$folio)->first();
 
+            if(!$acta_unidad){
+                $acta_unidad = new Acta();
+                $acta_unidad->folio                         = $acta_central->folio;
+                $acta_unidad->ciudad                        = $acta_central->ciudad;
+                $acta_unidad->fecha                         = $acta_central->fecha;
+                $acta_unidad->hora_inicio                   = $acta_central->hora_inicio;
+                $acta_unidad->hora_termino                  = $acta_central->hora_termino;
+                $acta_unidad->lugar_reunion                 = $acta_central->lugar_reunion;
+                $acta_unidad->lugar_entrega                 = $acta_central->lugar_entrega;
+                $acta_unidad->empresa                       = $acta_central->empresa_clave;
+                $acta_unidad->estatus                       = $acta_central->estatus;
+                $acta_unidad->estatus_sincronizacion        = $acta_central->estatus_sincronizacion;
+                $acta_unidad->director_unidad               = $acta_central->director_unidad;
+                $acta_unidad->administrador                 = $acta_central->administrador;
+                $acta_unidad->encargado_almacen             = $acta_central->encargado_almacen;
+                $acta_unidad->coordinador_comision_abasto   = $acta_central->coordinador_comision_abasto;
+                $acta_unidad->numero                        = $acta_central->numero;
+                $acta_unidad->created_at                    = $acta_central->created_at;
+                $acta_unidad->updated_at                    = $acta_central->updated_at;
+            }
+
             $acta_unidad->fecha_validacion = $acta_central->fecha_validacion;
             $acta_unidad->estatus = $acta_central->estatus;
             $acta_unidad->estatus_sincronizacion = 2;
