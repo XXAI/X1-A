@@ -180,6 +180,7 @@ Route::group([ 'prefix' => 'v1'], function () {
             Route::resource('dashboard', 'DashboardController',['only' => ['index']]);
 
             Route::get('sincronizar-validacion/{id}','ActaController@sincronizar');
+            Route::get('sincronizar-pedido/{id}','PedidoController@sincronizar');
 
             Route::resource('actas', 'ActaController',
                         ['only' => ['index', 'show','store', 'update', 'destroy']]);

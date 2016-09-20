@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 
+use App\Http\Traits\SyncTrait;
 use App\Http\Requests;
 use App\Models\Acta;
 use App\Models\Requisicion;
@@ -17,6 +18,7 @@ use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, \ZipArchive
 
 class PedidoController extends Controller
 {
+    use SyncTrait;
     /**
      * Display a listing of the resource.
      *
@@ -60,7 +62,10 @@ class PedidoController extends Controller
             $recurso = $recurso->with('UnidadMedica','requisiciones')
                                 ->skip(($pagina-1)*$elementos_por_pagina)
                                 ->take($elementos_por_pagina)
-                                ->orderBy('id','desc')->get();
+                                ->orderBy('estatus','asc')
+                                ->orderBy('estatus_sincronizacion','asc')
+                                ->orderBy('fecha_validacion','desc')
+                                ->get();
 
             //$queries = DB::getQueryLog();
             //$last_query = end($queries);
@@ -690,9 +695,41 @@ class PedidoController extends Controller
             }
 
             DB::commit();
+
+            if($acta->estatus == 4){
+                //DB::rollBack();
+                $resultado = $this->actualizarUnidades($acta->folio);
+                if(!$resultado['estatus']){
+                    return Response::json(['error' => 'Error al intentar sincronizar el acta', 'error_type' => 'data_validation', 'message'=>$resultado['message']], HttpResponse::HTTP_CONFLICT);
+                }
+                $acta = Acta::find($id);
+            }
+
             return Response::json([ 'data' => $acta ],200);
         } catch (\Exception $e) {
             DB::rollBack();
+            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+        }
+    }
+
+    public function sincronizar($id){
+        try {
+            $acta = Acta::find($id);
+            if(!$acta){
+                return Response::json(['error' => 'Acta no encontrada.', 'error_type' => 'data_validation'], HttpResponse::HTTP_CONFLICT);
+            }
+            if($acta->estatus >= 4){
+                //DB::rollBack();
+                $resultado = $this->actualizarUnidades($acta->folio);
+                if(!$resultado['estatus']){
+                    return Response::json(['error' => 'Error al intentar sincronizar el acta', 'error_type' => 'data_validation', 'message'=>$resultado['message']], HttpResponse::HTTP_CONFLICT);
+                }
+                $acta = Acta::find($id);
+            }else{
+                return Response::json(['error' => 'El acta no puede ser sincronizada en este modulo.', 'error_type' => 'data_validation'], HttpResponse::HTTP_CONFLICT);
+            }
+            return Response::json([ 'data' => $acta ],200);
+        } catch (\Exception $e) {
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
         }
     }
