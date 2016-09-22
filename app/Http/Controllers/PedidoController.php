@@ -63,8 +63,8 @@ class PedidoController extends Controller
                                 ->skip(($pagina-1)*$elementos_por_pagina)
                                 ->take($elementos_por_pagina)
                                 ->orderBy('estatus','asc')
+                                ->orderBy('fecha_termino','desc')
                                 ->orderBy('estatus_sincronizacion','asc')
-                                ->orderBy('fecha_validacion','desc')
                                 ->get();
 
             //$queries = DB::getQueryLog();
@@ -244,6 +244,7 @@ class PedidoController extends Controller
                             'pedido' => $requisicion->pedido,
                             'tipo_requisicion' => $requisicion->tipo_requisicion,
                             'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
+                            'proveedor_id' => $insumo->pivot->proveedor_id,
                             'no_requisicion' => $requisicion->numero,
                             'lugar_entrega' => $acta->lugar_entrega,
                             'sub_total' => 0,
