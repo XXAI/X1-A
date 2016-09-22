@@ -228,13 +228,13 @@
 			</tr>
 		@else
 			<tr class="tabla-datos">
-				<th colspan="5" class="encabezado-tabla fondo-titulo">PEDIDO EMERGENTE DE ABASTOS A UNIDADES MEDICAS EN RELACION AL CONTRATO ABIERTO DE PRESTACION DE SERVICIO.</th>
-				<th class="encabezado-tabla fondo-titulo"> No. DE OFICIO DE SOLICITUD DEL ÁREA MÉDICA</th>
+				<th colspan="4" class="encabezado-tabla fondo-titulo">PEDIDO EMERGENTE DE ABASTOS A UNIDADES MEDICAS EN RELACION AL CONTRATO ABIERTO DE PRESTACION DE SERVICIO.</th>
+				<th colspan="2" class="encabezado-tabla fondo-titulo"> No. DE OFICIO DE SOLICITUD DEL ÁREA MÉDICA</th>
 				<th class="encabezado-tabla">{{$oficio_area_medica}}</th>
 			</tr>
 			<tr class="tabla-datos">
 				<th class="encabezado-tabla fondo-titulo">PARTIDA PRESUPUESTAL:</th>
-				<th class="encabezado-tabla">{{$empresa->partida_presupuestal}}</th>
+				<th class="encabezado-tabla" colspan="2">{{$empresa->partida_presupuestal}}</th>
 				<th class="encabezado-tabla fondo-titulo">EMPRESA ADJUDICADA EN LICITACIÓN</th>
 				<th class="encabezado-tabla">{{$empresa->nombre}}</th>
 				<th class="encabezado-tabla fondo-titulo">NÚMERO DE PEDIDO ADJUDICADO EN LICITACIÓN</th>
