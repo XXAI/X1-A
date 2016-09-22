@@ -116,7 +116,7 @@ Route::group([ 'prefix' => 'v1'], function () {
     Route::get('notificacion-pdf/{id}',    'PedidoController@generarNotificacionPDF');
     Route::get('exportar-csv/{id}',         'ActaController@generarJSON');
     Route::get('pedidos-excel/{id}','PedidosExcelController@generar');
-    
+
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     
                 //return Response::json(['error'=>"ERROR_PERMISOS"],500);
@@ -169,32 +169,22 @@ Route::group([ 'prefix' => 'v1'], function () {
                 }
            });
             
-            Route::resource('usuarios', 'UsuarioController',
-                        ['only' => ['index', 'show','store', 'update', 'destroy']]);
-            
-            Route::resource('roles', 'RolController',
-                        ['only' => ['index', 'show','store', 'update', 'destroy']]);
-            Route::resource('permisos', 'PermisoController',
-                        ['only' => ['index', 'show','store', 'update', 'destroy']]);
+            Route::resource('usuarios', 'UsuarioController',    ['only' => ['index', 'show','store', 'update', 'destroy']]);
+            Route::resource('roles', 'RolController',           ['only' => ['index', 'show','store', 'update', 'destroy']]);
+            Route::resource('permisos', 'PermisoController',    ['only' => ['index', 'show','store', 'update', 'destroy']]);
 
-            Route::resource('dashboard', 'DashboardController',['only' => ['index']]);
+            Route::resource('dashboard', 'DashboardController', ['only' => ['index']]);
 
             Route::get('sincronizar-validacion/{id}','ActaController@sincronizar');
             Route::get('sincronizar-pedido/{id}','PedidoController@sincronizar');
 
-            Route::resource('actas', 'ActaController',
-                        ['only' => ['index', 'show','store', 'update', 'destroy']]);
-            Route::resource('requisiciones', 'RequisicionController',
-                        ['only' => ['index', 'show', 'update']]);
-            Route::resource('pedidos', 'PedidoController',
-                        ['only' => ['index', 'show', 'update']]);
+            Route::get('clonar-acta/{id}','ClonarActasController@clonar');
 
-
-        
+            Route::resource('actas', 'ActaController',                  ['only' => ['index', 'show','store', 'update', 'destroy']]);
+            Route::resource('requisiciones', 'RequisicionController',   ['only' => ['index', 'show', 'update']]);
+            Route::resource('pedidos', 'PedidoController',              ['only' => ['index', 'show', 'update']]);
+            
     });
-   
-   
-   
    
    Route::get('/restricted', function () {
        return ['data' => 'This has come from a dedicated API subdomain with restricted access.'];
