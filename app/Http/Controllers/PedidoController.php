@@ -134,6 +134,7 @@ class PedidoController extends Controller
                 if($insumo->pivot->proveedor_id){
                     if(!isset($proveedores[$insumo->pivot->proveedor_id])){
                         $proveedores[$insumo->pivot->proveedor_id] = [
+                            'id'=>$insumo->pivot->proveedor_id,
                             'nombre' => '',
                             'direccion' => '',
                             'ciudad' => '',

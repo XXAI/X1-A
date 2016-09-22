@@ -282,8 +282,7 @@ trait SyncTrait{
                                 'cantidad' => $req_insumo->pivot->cantidad,
                                 'total' => $req_insumo->pivot->total,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
-                                'total_validado' => $req_insumo->pivot->total_validado,
-                                'proveedor_id' => $req_insumo->pivot->proveedor_id
+                                'total_validado' => $req_insumo->pivot->total_validado
                             ];
                         }
                         $requisicion->insumosClues()->sync([]);

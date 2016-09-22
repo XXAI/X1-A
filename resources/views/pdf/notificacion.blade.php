@@ -141,9 +141,11 @@
 		Oficio No. DAF/SRMySG/DRM/{{$proveedor['num_oficio']}}/2016<br>
 		ASUNTO:</strong> Notificación de Adjudicación.
 		<br><br>
+		@if($proveedor['id'] != 7)
 		<span class="cursiva">
 			Tuxtla Gutiérrez, Chiapas; a {{$acta->fecha_pedido[2]}} de {{$acta->fecha_pedido[1]}} de 2016.
 		</span>
+		@endif
 	</p>
 	<p class="texto-izquierda">
 		<strong>
