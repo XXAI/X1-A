@@ -7,7 +7,7 @@
             margin-top: 7.3em;
             margin-left: 5.6em;
             margin-right: 6.6em;
-            margin-bottom: 1.3em;
+            margin-bottom: 5.3em;
         }
         #watermark {
 			position: fixed;
