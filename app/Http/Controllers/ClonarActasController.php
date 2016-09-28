@@ -32,6 +32,16 @@ class ClonarActasController extends Controller
                 $clues_nueva = $acta->clues;
             }
 
+            if(isset($parametros['max_estatus'])){
+                if($parametros['max_estatus'] >= 1 && $parametros['max_estatus'] <= 4){
+                    $max_estatus = $parametros['max_estatus'];
+                }else{
+                    return Response::json(['error' => 'Estatus no valido'], 500);
+                }
+            }else{
+                $max_estatus = $acta->estatus;
+            }
+
             $max_requisicion = 0;
             $max_acta = Acta::where('folio','like',$clues_nueva.'/%'.date('Y'))->max('numero');
 
@@ -44,14 +54,10 @@ class ClonarActasController extends Controller
 
             $nueva_acta->clues                         = $clues_nueva;
             $nueva_acta->fecha                         = $acta->fecha;
-            $nueva_acta->fecha_solicitud               = $acta->fecha_solicitud;
-            $nueva_acta->fecha_pedido                  = $acta->fecha_pedido;
             $nueva_acta->fecha_importacion             = $acta->fecha_importacion;
-            $nueva_acta->fecha_termino                 = $acta->fecha_termino;
-            $nueva_acta->fecha_validacion              = $acta->fecha_validacion;
             $nueva_acta->hora_inicio                   = $acta->hora_inicio;
             $nueva_acta->hora_termino                  = $acta->hora_termino;
-            $nueva_acta->estatus                       = $acta->estatus;
+            $nueva_acta->estatus                       = $max_estatus;
             $nueva_acta->estatus_sincronizacion        = 1;
             $nueva_acta->updated_at                    = $acta->updated_at;
 
@@ -75,7 +81,10 @@ class ClonarActasController extends Controller
                 $nueva_acta->empresa_clave                 = $acta->empresa_clave;
             }
 
-            if($acta->estatus >= 3){
+            if($max_estatus >= 3){
+                $nueva_acta->fecha_solicitud               = $acta->fecha_solicitud;
+                $nueva_acta->fecha_validacion              = $acta->fecha_validacion;
+
                 $max_oficio = Acta::max('num_oficio');
                 $nueva_acta->num_oficio = $max_oficio+1;
 
@@ -86,7 +95,10 @@ class ClonarActasController extends Controller
                     $max_requisicion = 0;
                 }
 
-                if($acta->estatus == 4){
+                if($max_estatus == 4){
+                    $nueva_acta->fecha_pedido                  = $acta->fecha_pedido;
+                    $nueva_acta->fecha_termino                 = $acta->fecha_termino;
+
                     $max_oficio = Acta::max('num_oficio_pedido');
                     if(!$max_oficio){
                         $max_oficio = 0;
@@ -103,10 +115,15 @@ class ClonarActasController extends Controller
 
                     if($nueva_acta->estatus >= 3){
                         $max_requisicion++;
-                        $nueva_requisicion->numero            = $max_requisicion;
+                        $nueva_requisicion->numero                = $max_requisicion;
+                        $nueva_requisicion->estatus               = $requisicion->estatus;
+                        $nueva_requisicion->sub_total_validado    = $requisicion->sub_total_validado;
+                        $nueva_requisicion->gran_total_validado   = $requisicion->gran_total_validado;
+                        $nueva_requisicion->iva_validado          = $requisicion->iva_validado;
+                    }elseif($nueva_acta->estatus < 3){
+                        $nueva_requisicion->estatus = null;
                     }
 
-                    $nueva_requisicion->estatus               = $requisicion->estatus;
                     $nueva_requisicion->pedido                = $requisicion->pedido;
                     $nueva_requisicion->lotes                 = $requisicion->lotes;
                     $nueva_requisicion->tipo_requisicion      = $requisicion->tipo_requisicion;
@@ -114,30 +131,31 @@ class ClonarActasController extends Controller
                     $nueva_requisicion->sub_total             = $requisicion->sub_total;
                     $nueva_requisicion->gran_total            = $requisicion->gran_total;
                     $nueva_requisicion->iva                   = $requisicion->iva;
-                    $nueva_requisicion->sub_total_validado    = $requisicion->sub_total_validado;
-                    $nueva_requisicion->gran_total_validado   = $requisicion->gran_total_validado;
-                    $nueva_requisicion->iva_validado          = $requisicion->iva_validado;
                     $nueva_requisicion->updated_at            = $requisicion->updated_at;
 
                     $nueva_acta->requisiciones()->save($nueva_requisicion);
 
                     $insumos = [];
                     foreach ($requisicion->insumos as $req_insumo) {
-                        $proveedor_id = $req_insumo->pivot->proveedor_id;
-
-                        /*if($requisicion->tipo_requisicion == 4){
-                            if(isset($parametros['proveedor_controlados_id'])){
-                                $proveedor_id = $parametros['proveedor_controlados_id'];
+                        if($nueva_acta->estatus >= 4){
+                            $proveedor_id = $req_insumo->pivot->proveedor_id;
+                            if(isset($parametros['proveedor_id'])){
+                                $proveedor_id = $parametros['proveedor_id'];
                             }
-                        }else*/
-                        if(isset($parametros['proveedor_id'])){
-                            $proveedor_id = $parametros['proveedor_id'];
+                        }else{
+                            $proveedor_id = null;
                         }
+                        
 
                         if($proveedor_id){
                             if(!isset($lista_proveedores[$proveedor_id])){
                                 $lista_proveedores[$proveedor_id] = true;
                             }
+                        }
+
+                        if($nueva_acta->estatus < 3){
+                            $req_insumo->pivot->cantidad_validada = $req_insumo->pivot->cantidad;
+                            $req_insumo->pivot->total_validado = $req_insumo->pivot->total;
                         }
 
                         $insumos[] = [
@@ -153,6 +171,11 @@ class ClonarActasController extends Controller
 
                     $insumos = [];
                     foreach ($requisicion->insumosClues as $req_insumo) {
+                        if($nueva_acta->estatus < 3){
+                            $req_insumo->pivot->cantidad_validada = $req_insumo->pivot->cantidad;
+                            $req_insumo->pivot->total_validado = $req_insumo->pivot->total;
+                        }
+
                         $insumos[] = [
                             'insumo_id'         => $req_insumo->id,
                             'clues'             => $req_insumo->pivot->clues,
