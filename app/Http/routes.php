@@ -112,7 +112,7 @@ Route::post('/signin', function () {
 Route::group([ 'prefix' => 'v1'], function () {
     Route::get('solicitudes-pdf/{id}',    'RequisicionController@generarSolicitudesPDF');
     Route::get('oficio-pdf/{id}',    'RequisicionController@generarOficioPDF');
-    Route::get('pedidos-pdf/{id}',    'PedidoController@generarPedidoPDF');
+    //Route::get('pedidos-pdf/{id}',    'PedidoController@generarPedidoPDF');
     Route::get('notificacion-pdf/{id}',    'PedidoController@generarNotificacionPDF');
     Route::get('exportar-csv/{id}',         'ActaController@generarJSON');
     Route::get('pedidos-excel/{id}','PedidosExcelController@generar');
@@ -176,7 +176,8 @@ Route::group([ 'prefix' => 'v1'], function () {
             Route::resource('dashboard', 'DashboardController', ['only' => ['index']]);
 
             Route::get('sincronizar-validacion/{id}','ActaController@sincronizar');
-            Route::get('sincronizar-pedido/{id}','PedidoController@sincronizar');
+            Route::get('sincronizar-pedido/{id}', 'PedidoController@sincronizar');
+            Route::get('generar-pedidos/{id}',    'PedidoController@generarPedidos');
 
             Route::get('clonar-acta/{id}','ClonarActasController@clonar');
 

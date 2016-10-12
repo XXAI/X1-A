@@ -12,7 +12,7 @@ use App\Models\Requisicion;
 use App\Models\Empresa;
 use App\Models\UnidadMedica;
 use Illuminate\Support\Facades\Input;
-use \Validator,\Hash, \Response, \DB, \PDF, \Storage, \ZipArchive, DateTime;
+use \Validator,\Hash, \Response, \DB, \PDF, \Storage, \ZipArchive, DateTime, Exception;
 
 class ActaController extends Controller
 {
@@ -147,6 +147,12 @@ class ActaController extends Controller
                 $folio_array = explode('/', $json['folio']);
                 $json['clues'] = $folio_array[0];
 
+                $acta_central = Acta::where('folio',$json['folio'])->first();
+
+                if($acta_central){
+                    return Response::json(['error' => 'El acta ya se encuentra cargada.'], HttpResponse::HTTP_CONFLICT);
+                }
+
                 DB::beginTransaction();
 
                 //$json['firma_solicita'] = $json['requisiciones'][0]['firma_solicita'];
@@ -209,7 +215,7 @@ class ActaController extends Controller
 
                 return Response::json([ 'data' => $json ],200);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
             Storage::deleteDirectory('imports/'.$user_email.'/');
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);

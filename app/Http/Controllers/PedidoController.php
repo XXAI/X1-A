@@ -206,85 +206,109 @@ class PedidoController extends Controller
         return $pdf->stream('Notificaciones-'.$acta->folio.'.pdf');
     }
 
-    public function generarPedidoPDF($id){
-        $data = [];
-        //$acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
-        $acta = Acta::with([
-            'requisiciones'=>function($query){
-                $query->where('gran_total_validado','>',0);
-            },'requisiciones.insumos'=>function($query){
-                $query->wherePivot('cantidad_validada','>',0)
-                    ->orderBy('lote');
-            },'proveedores'
-        ])->find($id);
+    public function generarPedidos($id){
+        try{
+            $data = [];
+            //$acta = Acta::with('requisiciones.insumos','proveedores')->find($id);
+            $acta = Acta::with([
+                'requisiciones'=>function($query){
+                    $query->where('gran_total_validado','>',0)->orderBy('tipo_requisicion','asc');
+                },'requisiciones.insumos'=>function($query){
+                    $query->wherePivot('cantidad_validada','>',0)
+                        ->orderBy('lote');
+                },'proveedores'
+            ])->find($id);
 
-        $num_oficio_proveedores = $acta->proveedores()->lists('num_oficio','proveedor_id');
-        /*if(!$requisicion->estatus){
-            return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
-        }*/
+            $num_oficio_proveedores = $acta->proveedores()->lists('num_oficio','proveedor_id');
+            /*if(!$requisicion->estatus){
+                return Response::json(['error' => 'No se puede generar el archivo por que la requisición no se encuentra aprobada'], HttpResponse::HTTP_CONFLICT);
+            }*/
 
-        //$unidad = UnidadMedica::where('clues',$acta->clues)->first();
-        $empresa = Empresa::where('clave',$acta->empresa_clave)->first();
+            //$unidad = UnidadMedica::where('clues',$acta->clues)->first();
+            $empresa = Empresa::where('clave',$acta->empresa_clave)->get();
+            $partidas = $empresa->lists('partida_presupuestal','pedido');
+            $empresa = $empresa[0];
 
-        $configuracion = Configuracion::find(1);
+            $configuracion = Configuracion::find(1);
 
-        $proveedores = Proveedor::lists('nombre','id');
-        
-        $pedidos = [];
-        foreach ($acta->requisiciones as $requisicion) {
-            if(!isset($pedidos[$requisicion->pedido])){
-                $pedidos[$requisicion->pedido] = [];
-            }
-            $pedido = [];
-            foreach ($requisicion->insumos as $insumo) {
-                if($insumo->pivot->proveedor_id){
-                    if(!isset($pedido[$insumo->pivot->proveedor_id])){
-                        $pedido[$insumo->pivot->proveedor_id] = [
-                            'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
-                            'pedido' => $requisicion->pedido,
-                            'tipo_requisicion' => $requisicion->tipo_requisicion,
-                            'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
-                            'proveedor_id' => $insumo->pivot->proveedor_id,
-                            'no_requisicion' => $requisicion->numero,
-                            'lugar_entrega' => $acta->lugar_entrega,
-                            'sub_total' => 0,
-                            'iva' => 0,
-                            'gran_total' => 0,
-                            'total_letra' => '',
-                            'fuente_financiamiento' => '',
-                            'insumos' => []
-                        ];
-                        if($requisicion->tipo_requisicion == 2){
-                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'FASSA';
-                        }else{
-                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'REPSS';
+            $proveedores = Proveedor::lists('nombre','id');
+
+            $descripciones_tipo_requisicion = [
+                1=>'CAUSES',
+                2=>'NO CAUSES',
+                3=>'MATERIAL DE CURACIÓN',
+                4=>'CONTROLADOS'
+            ];
+            
+            $pedidos = [];
+            foreach ($acta->requisiciones as $requisicion) {
+                /*if(!isset($pedidos[$requisicion->pedido])){
+                    $pedidos[$requisicion->pedido] = [];
+                }*/
+                //$pedido = [];
+                foreach ($requisicion->insumos as $insumo) {
+                    if($insumo->pivot->proveedor_id){
+                        if(!isset($pedidos[$insumo->pivot->proveedor_id])){
+                            $pedidos[$insumo->pivot->proveedor_id] = [];
                         }
-                    }
-                    $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
+                        if(!isset($pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido])){
+                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido] = [
+                                'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
+                                'pedido' => $requisicion->pedido,
+                                'partida_presupuestal' => $partidas[$requisicion->pedido],
+                                'tipo_requisicion' => $requisicion->tipo_requisicion,
+                                'tipo_requisicion_descripcion' => $descripciones_tipo_requisicion[$requisicion->tipo_requisicion],
+                                'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
+                                'proveedor_id' => $insumo->pivot->proveedor_id,
+                                'no_requisicion' => $requisicion->numero,
+                                'lugar_entrega' => $acta->lugar_entrega,
+                                'sub_total' => 0,
+                                'iva' => 0,
+                                'gran_total' => 0,
+                                'total_letra' => '',
+                                'fuente_financiamiento' => '',
+                                'insumos' => []
+                            ];
+                            if($requisicion->tipo_requisicion == 2){
+                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['fuente_financiamiento'] = 'FASSA';
+                            }else{
+                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['fuente_financiamiento'] = 'REPSS';
+                            }
+                        }
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['insumos'][] = $insumo->toArray();
 
-                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_validado;
-                    if($requisicion->tipo_requisicion == 3){
-                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_validado*16/100;
-                        $iva = $insumo->pivot->total_validado*16/100;
-                    }else{
-                        $iva = 0;
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['sub_total'] += $insumo->pivot->total_validado;
+                        if($requisicion->tipo_requisicion == 3){
+                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['iva'] += $insumo->pivot->total_validado*16/100;
+                            $iva = $insumo->pivot->total_validado*16/100;
+                        }else{
+                            $iva = 0;
+                        }
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['gran_total'] += $iva + $insumo->pivot->total_validado;
                     }
-                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_validado;
                 }
+                foreach ($pedidos as $proveedor_id => $lista_pedidos) {
+                    foreach ($lista_pedidos as $pedido_clave => $datos_pedido) {
+                        $pedidos[$proveedor_id][$pedido_clave]['total_letra'] = $this->transformarCantidadLetras($datos_pedido['gran_total']);
+                    }
+                    //$pedido[$index]['total_letra'] = $this->transformarCantidadLetras($proveedor['gran_total']);
+                }
+                //$pedidos[$requisicion->pedido][] = $pedido;
             }
-            foreach ($pedido as $index => $proveedor) {
-                $pedido[$index]['total_letra'] = $this->transformarCantidadLetras($proveedor['gran_total']);
-            }
-            $pedidos[$requisicion->pedido][] = $pedido;
-        }
-        //var_dump($pedidos);die;
-        //return Response::json([ 'data' => $pedidos ],200);
-        $data['empresa'] = $empresa;
-        $data['pedidos'] = $pedidos;
-        $data['estatus'] = $acta->estatus;
-        $data['oficio_area_medica'] = $acta->num_oficio;
-        $data['configuracion'] = $configuracion;
+            //var_dump($pedidos);die;
+            //return Response::json([ 'data' => $pedidos ],200);
+            $data['empresa'] = $empresa;
+            $data['pedidos'] = $pedidos;
+            $data['estatus'] = $acta->estatus;
+            $data['oficio_area_medica'] = $acta->num_oficio;
+            $data['configuracion'] = $configuracion;
 
+            return Response::json([ 'data' => $data ],200);
+        } catch (\Exception $e) {
+            //DB::rollBack();
+            return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
+        }
+        /*
         $pdf = PDF::loadView('pdf.pedido', $data);
         $pdf->output();
         $dom_pdf = $pdf->getDomPDF();
@@ -292,8 +316,8 @@ class PedidoController extends Controller
         $w = $canvas->get_width();
         $h = $canvas->get_height();
         $canvas->page_text(($w/2)-10, ($h-40), "{PAGE_NUM} de {PAGE_COUNT}", null, 10, array(0, 0, 0));
-
         return $pdf->stream('Pedido-'.$acta->folio.'.pdf');
+        */
     }
 
     public function transformarCantidadLetras($cantidad){
