@@ -22,6 +22,7 @@ class CrearTablaProveedores extends Migration
             $table->string('telefono',20)->nullable();
             $table->string('cel',20)->nullable();
             $table->string('email',255)->nullable();
+            $table->string('rfc',100)->nullable();
         });
     }
 

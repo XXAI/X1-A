@@ -20,7 +20,8 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> 'Gerente General',
 				'telefono'			=> '61-3-34-00',
 				'cel'				=> '961-579-2940',
-				'email'				=> 'javier.velasco@grupodms.com.mx'
+				'email'				=> 'javier.velasco@grupodms.com.mx',
+				'rfc'				=> null
 			],
 			[
 				'nombre'			=> 'Distribuidora Médica de los Ángeles',
@@ -30,7 +31,8 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> 'Gerente General',
 				'telefono'			=> '21-2-18-37',
 				'cel'				=> '961-579-2659',
-				'email'				=> null
+				'email'				=> null,
+				'rfc'				=> null
 			],
 			[
 				'nombre'			=> 'Farmacias BIOS',
@@ -40,7 +42,8 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> 'Gerente General',
 				'telefono'			=> '967-67-8-83-78',
 				'cel'				=> '967-102-0217',
-				'email'				=> 'gerenciabios@hotmail.com'
+				'email'				=> 'gerenciabios@hotmail.com',
+				'rfc'				=> null
 			],
 			[
 				'nombre'			=> 'Distribuidora  de Insumos Médicos SAHU S.A. de C.V.',
@@ -50,7 +53,8 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> 'Gerente Comercial',
 				'telefono'			=> null,
 				'cel'				=> '961-262-9741',
-				'email'				=> 'Csilva_rivera@hotmail.com'
+				'email'				=> 'Csilva_rivera@hotmail.com',
+				'rfc'				=> null
 			],
 			[
 				'nombre'			=> 'Comercializadora Quirúrgicas y Hospitalarias S.A. de C.V.',
@@ -60,7 +64,8 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> 'Gerente General',
 				'telefono'			=> '61-11-18-43',
 				'cel'				=> '961-295-1884',
-				'email'				=> 'Sumedic_tuxtla@hotmail.com'
+				'email'				=> 'Sumedic_tuxtla@hotmail.com',
+				'rfc'				=> null
 			],
 			[
 				'nombre'			=> 'Equipos Médicos de Chiapas',
@@ -70,7 +75,19 @@ class ProveedoresSeeder extends Seeder
 				'cargo_contacto'	=> null,
 				'telefono'			=> null,
 				'cel'				=> '961-602-9952',
-				'email'				=> null
+				'email'				=> null,
+				'rfc'				=> null
+			],
+			[
+				'nombre'			=> 'EXFARMA S.A. DE C.V.',
+				'direccion'			=> 'Av. Constituyentes No. 1000 PB. Col. Lomas Altas Del. Miguel Hidalgo, C.P. 11950',
+				'ciudad'			=> 'México, D. F.',
+				'contacto'			=> null,
+				'cargo_contacto'	=> null,
+				'telefono'			=> '55702719',
+				'cel'				=> null,
+				'email'				=> null,
+				'rfc'				=> 'EXF071009BB4'
 			]
         ]);
     }

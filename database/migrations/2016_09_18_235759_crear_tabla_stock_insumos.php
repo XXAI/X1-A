@@ -14,11 +14,12 @@ class CrearTablaStockInsumos extends Migration
     {
         Schema::create('stock_insumos', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('entrega_id')->lenght(10);
+            $table->integer('entrada_id')->lenght(10);
+            $table->string('clues',12)->nullable();
             $table->integer('insumo_id')->lenght(10);
             $table->string('lote',200);
             $table->date('fecha_caducidad')->nullable();
-            $table->integer('cantidad_entregada');
+            $table->integer('cantidad_recibida');
 
             $table->integer('stock')->nullable();
             $table->integer('usado')->nullable();
