@@ -237,7 +237,9 @@ class PedidoController extends Controller
                 1=>'CAUSES',
                 2=>'NO CAUSES',
                 3=>'MATERIAL DE CURACIÓN',
-                4=>'CONTROLADOS'
+                4=>'CONTROLADOS',
+                5=>'SURFACTANTE CAUSES',
+                6=>'SURFACTANTE NO CAUSES'
             ];
             
             $pedidos = [];
@@ -251,8 +253,8 @@ class PedidoController extends Controller
                         if(!isset($pedidos[$insumo->pivot->proveedor_id])){
                             $pedidos[$insumo->pivot->proveedor_id] = [];
                         }
-                        if(!isset($pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido])){
-                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido] = [
+                        if(!isset($pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion])){
+                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion] = [
                                 'oficio' => $num_oficio_proveedores[$insumo->pivot->proveedor_id],
                                 'pedido' => $requisicion->pedido,
                                 'partida_presupuestal' => $partidas[$requisicion->pedido],
@@ -270,21 +272,23 @@ class PedidoController extends Controller
                                 'insumos' => []
                             ];
                             if($requisicion->tipo_requisicion == 2){
-                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['fuente_financiamiento'] = 'FASSA';
+                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['fuente_financiamiento'] = 'FASSA';
+                            }else if($requisicion->tipo_requisicion > 4){
+                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['fuente_financiamiento'] = '';
                             }else{
-                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['fuente_financiamiento'] = 'REPSS';
+                                $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['fuente_financiamiento'] = 'REPSS';
                             }
                         }
-                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['insumos'][] = $insumo->toArray();
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['insumos'][] = $insumo->toArray();
 
-                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['sub_total'] += $insumo->pivot->total_validado;
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['sub_total'] += $insumo->pivot->total_validado;
                         if($requisicion->tipo_requisicion == 3){
-                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['iva'] += $insumo->pivot->total_validado*16/100;
+                            $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['iva'] += $insumo->pivot->total_validado*16/100;
                             $iva = $insumo->pivot->total_validado*16/100;
                         }else{
                             $iva = 0;
                         }
-                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->pedido]['gran_total'] += $iva + $insumo->pivot->total_validado;
+                        $pedidos[$insumo->pivot->proveedor_id][$requisicion->tipo_requisicion]['gran_total'] += $iva + $insumo->pivot->total_validado;
                     }
                 }
                 foreach ($pedidos as $proveedor_id => $lista_pedidos) {
@@ -302,6 +306,7 @@ class PedidoController extends Controller
             $data['estatus'] = $acta->estatus;
             $data['oficio_area_medica'] = $acta->num_oficio;
             $data['configuracion'] = $configuracion;
+            $data['folio'] = $acta->folio;
 
             return Response::json([ 'data' => $data ],200);
         } catch (\Exception $e) {
