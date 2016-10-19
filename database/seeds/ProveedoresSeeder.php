@@ -88,7 +88,20 @@ class ProveedoresSeeder extends Seeder
 				'cel'				=> null,
 				'email'				=> null,
 				'rfc'				=> 'EXF071009BB4'
+			],
+			[
+				'nombre'			=> 'Leticia Cauzor Soto',
+				'direccion'			=> 'Av. Sinaloa No. 8 Col. Plan de Ayala C.P. 29110',
+				'ciudad'			=> 'Tuxtla Gutiérrez, Chiapas',
+				'contacto'			=> null,
+				'cargo_contacto'	=> null,
+				'telefono'			=> '961-668-6469',
+				'cel'				=> null,
+				'email'				=> 'hormiga161@hotmail.com',
+				'rfc'				=> 'CASL690122AB5'
 			]
         ]);
     }
 }
+
+// 'Leticia Cauzor Soto', '', '', NULL, NULL, '', NULL, '', NULL
