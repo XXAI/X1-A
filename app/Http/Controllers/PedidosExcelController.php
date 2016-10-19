@@ -31,6 +31,7 @@ class PedidosExcelController extends Controller
         ])->find($id);
 
         $proveedores = Proveedor::lists('nombre','id');
+        $proveedores[0] = 'Sin proveedor asignado';
         
         $pedidos = [];
         
@@ -45,36 +46,39 @@ class PedidosExcelController extends Controller
             // REcorremos los lotes o insumos
             foreach ($requisicion->insumos as $insumo) {
                 if($insumo->pivot->proveedor_id){
-                    if(!isset($pedido[$insumo->pivot->proveedor_id])){
-                        $pedido[$insumo->pivot->proveedor_id] = [
-                            
-                            'pedido' => $requisicion->pedido,
-                            'tipo_requisicion' => $requisicion->tipo_requisicion,
-                            'proveedor' => $proveedores[$insumo->pivot->proveedor_id],
-                            'no_requisicion' => $requisicion->numero,
-                            'lugar_entrega' => $acta->lugar_entrega,
-                            'sub_total' => 0,
-                            'iva' => 0,
-                            'gran_total' => 0,
-                            'fuente_financiamiento' => '',
-                            'insumos' => []
-                        ];
-                        if($requisicion->tipo_requisicion == 2){
-                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'FASSA';
-                        }else{
-                            $pedido[$insumo->pivot->proveedor_id]['fuente_financiamiento'] = 'REPSS';
-                        }
-                    }
-                    $pedido[$insumo->pivot->proveedor_id]['insumos'][] = $insumo->toArray();
-                    $pedido[$insumo->pivot->proveedor_id]['sub_total'] += $insumo->pivot->total_validado;
-                    if($requisicion->tipo_requisicion == 3){
-                        $pedido[$insumo->pivot->proveedor_id]['iva'] += $insumo->pivot->total_validado*16/100;
-                        $iva = $insumo->pivot->total_validado*16/100;
-                    }else{
-                        $iva = 0;
-                    }
-                    $pedido[$insumo->pivot->proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_validado;
+                    $proveedor_id = $insumo->pivot->proveedor_id;
+                }else{
+                    $proveedor_id = 0;
                 }
+                if(!isset($pedido[$proveedor_id])){
+                    $pedido[$proveedor_id] = [
+                        'pedido' => $requisicion->pedido,
+                        'tipo_requisicion' => $requisicion->tipo_requisicion,
+                        'proveedor' => $proveedores[$proveedor_id],
+                        'no_requisicion' => $requisicion->numero,
+                        'lugar_entrega' => $acta->lugar_entrega,
+                        'sub_total' => 0,
+                        'iva' => 0,
+                        'gran_total' => 0,
+                        'fuente_financiamiento' => '',
+                        'insumos' => []
+                    ];
+                    if($requisicion->tipo_requisicion == 2){
+                        $pedido[$proveedor_id]['fuente_financiamiento'] = 'FASSA';
+                    }else{
+                        $pedido[$proveedor_id]['fuente_financiamiento'] = 'REPSS';
+                    }
+                }
+                $pedido[$proveedor_id]['insumos'][] = $insumo->toArray();
+                $pedido[$proveedor_id]['sub_total'] += $insumo->pivot->total_validado;
+                if($requisicion->tipo_requisicion == 3){
+                    $pedido[$proveedor_id]['iva'] += $insumo->pivot->total_validado*16/100;
+                    $iva = $insumo->pivot->total_validado*16/100;
+                }else{
+                    $iva = 0;
+                }
+                $pedido[$proveedor_id]['gran_total'] += $iva + $insumo->pivot->total_validado;
+
             }
             
             $pedidos[$requisicion->pedido][] = $pedido;
