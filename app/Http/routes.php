@@ -181,6 +181,8 @@ Route::group([ 'prefix' => 'v1'], function () {
 
             Route::get('clonar-acta/{id}','ClonarActasController@clonar');
 
+            Route::get('habilitar-captura-acta/{estatus}','ConfiguracionUnidadesController@habilitarCaptura');
+
             Route::resource('actas', 'ActaController',                  ['only' => ['index', 'show','store', 'update', 'destroy']]);
             Route::resource('requisiciones', 'RequisicionController',   ['only' => ['index', 'show', 'update']]);
             Route::resource('pedidos', 'PedidoController',              ['only' => ['index', 'show', 'update']]);
