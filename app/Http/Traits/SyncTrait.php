@@ -10,6 +10,7 @@ trait SyncTrait{
         try{
             $acta_central = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->where('folio',$folio)->first();
 
+
             if(($acta_central->estatus == 3 && $acta_central->estatus_sincronizacion == 2) || ($acta_central->estatus == 4 && $acta_central->estatus_sincronizacion == 3)){
                 throw new Exception('El acta ya se encuentra sincronizada', 1);
             }
@@ -109,7 +110,8 @@ trait SyncTrait{
                                 'total' => $req_insumo->pivot->total,
                                 'clues' => $req_insumo->pivot->clues,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
-                                'total_validado' => $req_insumo->pivot->total_validado
+                                'total_validado' => $req_insumo->pivot->total_validado,
+                                'requisicion_id_unidad' => $req_insumo->pivot->requisicion_id_unidad
                             ];
                         }
                         $requisiciones_validadas[$tipo_requisicion]['insumos_clues'] = $insumos;
@@ -205,7 +207,8 @@ trait SyncTrait{
                                     'insumo_id' => $insumo->id,
                                     'clues' => $insumo->pivot->clues,
                                     'cantidad' => $insumo->pivot->cantidad,
-                                    'total' => $insumo->pivot->total
+                                    'total' => $insumo->pivot->total,
+                                    'requisicion_id_unidad' => $insumo->pivot->requisicion_id_unidad
                                 ];
                                 if(isset($requisicion_import['insumos_clues'][$insumo->llave.'.'.$insumo->pivot->clues])){
                                     $insumo_import = $requisicion_import['insumos_clues'][$insumo->llave.'.'.$insumo->pivot->clues];
@@ -282,7 +285,8 @@ trait SyncTrait{
                                 'cantidad' => $req_insumo->pivot->cantidad,
                                 'total' => $req_insumo->pivot->total,
                                 'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
-                                'total_validado' => $req_insumo->pivot->total_validado
+                                'total_validado' => $req_insumo->pivot->total_validado,
+                                'requisicion_id_unidad' => $req_insumo->pivot->requisicion_id_unidad
                             ];
                         }
                         $requisicion->insumosClues()->sync([]);
