@@ -310,7 +310,8 @@ class RequisicionController extends Controller
                                 'total' => $req_insumo['total'],
                                 'cantidad_validada' => $req_insumo['cantidad_validada'],
                                 'total_validado' => $req_insumo['total_validado'],
-                                'clues' => $req_insumo['clues']
+                                'clues' => $req_insumo['clues'],
+                                'requisicion_id_unidad' => $req_insumo['requisicion_id_unidad']
                             ];
                         }
                         $requisicion->insumosClues()->sync([]);
@@ -321,7 +322,7 @@ class RequisicionController extends Controller
 
             DB::commit();
 
-            return Response::json([ 'data' => $requisicion ],200);
+            //return Response::json([ 'data' => $requisicion ],200);
         } catch (\Exception $e) {
             DB::rollBack();
             return Response::json(['error' => $e->getMessage(), 'line' => $e->getLine()], HttpResponse::HTTP_CONFLICT);
