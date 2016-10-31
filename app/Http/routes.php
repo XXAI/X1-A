@@ -179,13 +179,15 @@ Route::group([ 'prefix' => 'v1'], function () {
             Route::get('sincronizar-pedido/{id}', 'PedidoController@sincronizar');
             Route::get('generar-pedidos/{id}',    'PedidoController@generarPedidos');
 
-            Route::get('clonar-acta/{id}','ClonarActasController@clonar');
+            Route::resource('clues',        'CluesController',              ['only' => ['index']]);
+            Route::put('clonar-acta/{id}',  'ClonarActasController@clonar');
 
             Route::get('habilitar-captura-acta/{estatus}','ConfiguracionUnidadesController@habilitarCaptura');
 
-            Route::resource('actas', 'ActaController',                  ['only' => ['index', 'show','store', 'update', 'destroy']]);
-            Route::resource('requisiciones', 'RequisicionController',   ['only' => ['index', 'show', 'update']]);
-            Route::resource('pedidos', 'PedidoController',              ['only' => ['index', 'show', 'update']]);
+            Route::resource('actas',                'ActaController',               ['only' => ['index', 'show','store', 'update', 'destroy']]);
+            Route::resource('requisiciones',        'RequisicionController',        ['only' => ['index', 'show', 'update']]);
+            Route::resource('pedidos',              'PedidoController',             ['only' => ['index', 'show', 'update']]);
+            Route::resource('reportes/proveedores', 'ReporteProveedoresController', ['only' => ['index', 'show']]);
             
     });
    
