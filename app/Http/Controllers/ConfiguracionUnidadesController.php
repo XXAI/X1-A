@@ -18,7 +18,14 @@ class ConfiguracionUnidadesController extends Controller
 {
     public function habilitarCaptura($estatus){
         try{
-        	$habilitar_captura = ConfiguracionUnidades::obtenerValor('habilitar_captura');
+        	
+            $parametros = Input::all();
+
+            if($parametros['tipo'] == 'exfarma'){
+                $habilitar_captura = ConfiguracionUnidades::obtenerValor('habilitar_captura_exfarma');
+            }else{
+                $habilitar_captura = ConfiguracionUnidades::obtenerValor('habilitar_captura');
+            }
         	
         	if($estatus){
         		$habilitar_captura->valor = 1;

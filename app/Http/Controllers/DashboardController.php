@@ -29,6 +29,7 @@ class DashboardController extends Controller {
 		$user_email = $request->header('X-Usuario');
 
         $habilitar_captura = ConfiguracionUnidades::obtenerValor('habilitar_captura');
+        $habilitar_captura_exfarma = ConfiguracionUnidades::obtenerValor('habilitar_captura_exfarma');
 
 		$actas_sin_validar = Acta::where('estatus',2)->count();
 
@@ -40,7 +41,8 @@ class DashboardController extends Controller {
         $datos = [
         	'actas' => $actas,
         	'actas_sin_validar'=> $actas_sin_validar,
-            'actas_activas' => $habilitar_captura->valor
+            'actas_activas_otros' => $habilitar_captura->valor,
+            'actas_activas_exfarma' => $habilitar_captura_exfarma->valor,
         ];
         return Response::json(['data'=>$datos],200);
 	}
