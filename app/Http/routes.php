@@ -16,6 +16,29 @@ Route::get('/', 'WelcomeController@index');
 
 Route::get('home', 'HomeController@index');
 
+Route::get('create-hash',function(){
+    try{
+        $word = Input::get('word');
+        $passwords = [];
+        if($word){
+            $passwords[strtoupper($word)]= Hash::make(strtoupper($word));
+        }else{
+            $words = Input::get('words');
+            if($words){
+                foreach ($words as $word) {
+                    $passwords[strtoupper($word)]= Hash::make(strtoupper($word));
+                }
+            }else{
+                return Response::json(['message'=>'Sin parametros validos'],200);
+            }
+        }
+        return Response::json(['passwords'=>$passwords],200);
+        
+    }catch(Exception $e){
+        return Response::json(['message'=>$e->getMessage(),'line'=>$e->getLine()],500);
+    }
+});
+
 Route::controllers([
 	'auth' => 'Auth\AuthController',
 	'password' => 'Auth\PasswordController',
