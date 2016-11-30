@@ -138,10 +138,12 @@
 	</p>
 	<p class="texto-derecha">
 		<strong>
+		@if($acta->empresa_clave != 'disur')
 		Oficio No. DAF/SRMySG/DRM/{{$proveedor['num_oficio']}}/2016<br>
+		@endif
 		ASUNTO:</strong> Notificación de Adjudicación.
 		<br><br>
-		@if($proveedor['id'] != 7)
+		@if($proveedor['id'] != 7 && $acta->empresa_clave != 'disur')
 		<span class="cursiva">
 			Tuxtla Gutiérrez, Chiapas; a {{$acta->fecha_pedido[2]}} de {{$acta->fecha_pedido[1]}} de 2016.
 		</span>

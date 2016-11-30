@@ -129,11 +129,15 @@
 	</p>
 	<p class="texto-derecha">
 		<strong>
-		Oficio No. DAM/SAH/CAMM/{{str_pad($acta->num_oficio,4,'0',STR_PAD_LEFT)}}/2016<br>
+		@if($acta->empresa_clave != 'disur')
+			Oficio No. DAM/SAH/CAMM/{{str_pad($acta->num_oficio,4,'0',STR_PAD_LEFT)}}/2016<br>
+		@endif
 		ASUNTO: SE SOLICITA COMPRA DE MEDICAMENTOS URGENTE.
 		</strong><br><br>
 		<span class="cursiva">
+		@if($acta->empresa_clave != 'disur')
 			Tuxtla Gutiérrez, Chiapas; a {{$acta->fecha_solicitud[2]}} de {{$acta->fecha_solicitud[1]}} de 2016.
+		@endif
 		</span>
 	</p>
 	<p class="texto-izquierda">

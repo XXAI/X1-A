@@ -1,5 +1,6 @@
 <?php
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Input;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,12 +22,12 @@ Route::get('create-hash',function(){
         $word = Input::get('word');
         $passwords = [];
         if($word){
-            $passwords[strtoupper($word)]= Hash::make(strtoupper($word));
+            $passwords[$word]= Hash::make($word);
         }else{
             $words = Input::get('words');
             if($words){
                 foreach ($words as $word) {
-                    $passwords[strtoupper($word)]= Hash::make(strtoupper($word));
+                    $passwords[$word]= Hash::make($word);
                 }
             }else{
                 return Response::json(['message'=>'Sin parametros validos'],200);
