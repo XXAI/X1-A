@@ -9,7 +9,7 @@ class Usuario extends Model {
 	 *
 	 * @var array
 	 */
-	protected $fillable =  [ 'email'];
+	protected $fillable =  [ 'email','tipos_clues'];
 
 	public function scopeObtenerClavesPermisos($query){
 		return $query->select('permisos.clave AS clavePermiso')

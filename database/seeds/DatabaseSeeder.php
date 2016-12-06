@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder {
 	    $this->call(ConfiguracionDataSeeder::class);
 	    $this->call(InsumosSeeder::class);
 	    $this->call(CluesSeeder::class);
+	    $this->call(TiposCluesSeeder::class);
 
 	    Model::reguard();
 	}

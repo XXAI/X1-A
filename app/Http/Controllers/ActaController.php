@@ -392,7 +392,12 @@ class ActaController extends Controller
             DB::beginTransaction();
 
             if($inputs['estatus'] == 3){
-                $acta->estatus = 3;
+                if($acta->empresa_clave == 'exfarma'){
+                    $acta->estatus = 4;
+                }else{
+                    $acta->estatus = 3;
+                }
+                
                 $acta->fecha_validacion = new DateTime();
 
                 //Solo si no tiene número de oficio, le generamos uno (Para casos de revalidación)
@@ -445,7 +450,7 @@ class ActaController extends Controller
             }
             DB::commit();
 
-            if($acta->estatus == 3){
+            if($acta->estatus >= 3){
                 //DB::rollBack();
                 $resultado = $this->actualizarUnidades($acta->folio);
                 if(!$resultado['estatus']){

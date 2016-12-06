@@ -36,7 +36,8 @@ class PedidoController extends Controller
             $query = Input::get('query');
             $filtro = Input::get('filtro');
 
-            $recurso = Acta::where('estatus','>=',3);
+            //Se agrego filtro por empresa
+            $recurso = Acta::where('estatus','>=',3)->where('empresa_clave','disur');
 
             if($query){
                 $recurso = $recurso->where(function($condition)use($query){

@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Usuario as Usuario;
+use App\Models\TipoClues as TipoClues;
 
-use Input, Response,  Validator;
+use Input, Response,  Validator,Exception;
 use Illuminate\Http\Response as HttpResponse;
 
 
@@ -49,7 +50,16 @@ class UsuarioController extends Controller {
 
             return Response::json(['data'=>$usuarios,'totales'=>$totales],200);
         }catch(Exception $ex){
-            return Response::json(['error'=>$e->getMessage()],500);
+            return Response::json(['error'=>$ex->getMessage()],500);
+        }
+	}
+
+	public function catalogos(){
+		try{
+			$tipos_clues = TipoClues::get();
+			return Response::json(['data'=>['tipos_clues'=>$tipos_clues]],200);
+		}catch(Exception $ex){
+            return Response::json(['error'=>$ex->getMessage()],500);
         }
 	}
 
@@ -84,6 +94,15 @@ class UsuarioController extends Controller {
 			return Response::json(['error' => $v->errors()], HttpResponse::HTTP_CONFLICT);
 	    }
 		try {
+
+			if(count($inputs['tipos_clues'])){
+				foreach ($inputs['tipos_clues'] as $tipo) {
+					$tipos_clues[] = $tipo['id'];
+				}
+				$inputs['tipos_clues'] = implode(',',$tipos_clues);
+			}else{
+				$inputs['tipos_clues'] = null;
+			}
 			
 			$usuario = Usuario::create($inputs);
 			
@@ -121,7 +140,9 @@ class UsuarioController extends Controller {
 				throw new Exception('No existe el usuario');
 			}
 			$usuario->load('roles.permisos');
-        	return Response::json(['data'=>$usuario],200);
+
+			$tipos_clues = TipoClues::get();
+        	return Response::json(['data'=>$usuario,'catalogos'=>['tipos_clues'=>$tipos_clues]],200);
        	}catch(Exception $e){
              return Response::json(['error'=>$e->getMessage()],500);
     	}
@@ -163,7 +184,18 @@ class UsuarioController extends Controller {
 			if(!$usuario){
 				throw new Exception('No existe el usuario');
 			}
+
+			if(count($inputs['tipos_clues'])){
+				$tipos_clues = [];
+				foreach ($inputs['tipos_clues'] as $tipo) {
+					$tipos_clues[] = $tipo['id'];
+				}
+				$tipos_clues = implode(',',$tipos_clues);
+			}else{
+				$tipos_clues = null;
+			}
 			
+			$usuario->tipos_clues = $tipos_clues;
 			$usuario->email = $inputs['email'];
 			$usuario->save();					
 			
@@ -174,7 +206,7 @@ class UsuarioController extends Controller {
 					$roles[] = $rol['id'];
 				}
 			}
-						
+
 			if(count($roles)>0)
 				$usuario->roles()->sync($roles);
 			else

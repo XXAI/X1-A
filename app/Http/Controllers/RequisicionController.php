@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 
-use App\Http\Requests;
+
 use App\Models\Acta;
 use App\Models\Requisicion;
 use App\Models\Empresa;
+use App\Usuario;
 use App\Models\UnidadMedica;
 use App\Models\Configuracion;
+use App\Models\TipoClues;
 use Illuminate\Support\Facades\Input;
 use \Validator,\Hash, \Response, \DB, \Font_Metrics, \PDF, \Storage, DateTime;
 
@@ -24,6 +28,16 @@ class RequisicionController extends Controller
     public function index(Request $request){
 
         try{
+            $user_email = $request->header('X-Usuario');
+            $usuario = Usuario::where('email',$user_email)->first();
+            $seleccion_default = $usuario->tipos_clues;
+            if($seleccion_default){
+                $tipos_clues = explode(',',$seleccion_default);
+            }else{
+                $tipos_clues = [];
+            }
+            
+
             //DB::enableQueryLog();
             $elementos_por_pagina = 50;
             $pagina = Input::get('pagina');
@@ -53,8 +67,16 @@ class RequisicionController extends Controller
                         $recurso = $recurso->whereNull('fecha_validacion');
                     }
                 }
+                if(isset($filtro['tipo'])){
+                    $tipos_clues = explode(',',$filtro['tipo']);
+                }
             }
 
+            if(count($tipos_clues)){
+                $clues = UnidadMedica::whereIn('tipo_clues',$tipos_clues)->get()->lists('clues');
+                $recurso = $recurso->whereIn('clues',$clues);
+            }
+            
             $totales = $recurso->count();
             
             $recurso = $recurso->with('UnidadMedica','requisiciones')
@@ -70,6 +92,19 @@ class RequisicionController extends Controller
             return Response::json(['data'=>$recurso,'totales'=>$totales],200);
         }catch(Exception $ex){
             return Response::json(['error'=>$e->getMessage()],500);
+        }
+    }
+
+    public function catalogos(Request $request){
+        try{
+            $user_email = $request->header('X-Usuario');
+            $usuario = Usuario::where('email',$user_email)->first();
+            $seleccion_default = $usuario->tipos_clues;
+
+            $tipos_clues = TipoClues::get();
+            return Response::json(['data'=>['tipos_clues'=>$tipos_clues,'tipos_clues_default'=>$seleccion_default]],200);
+        }catch(Exception $ex){
+            return Response::json(['error'=>$ex->getMessage()],500);
         }
     }
 
@@ -262,6 +297,12 @@ class RequisicionController extends Controller
 
             if($requisicion->save()){
                 if($requisicion->estatus == 1){
+                    if($requisicion->acta->empresa_clave == 'exfarma'){
+                        $proveedor_id = 7;
+                    }else{
+                        $proveedor_id = null;
+                    }
+
                     $inputs_insumos = Input::get('insumos');
                     $insumos = [];
                     foreach ($inputs_insumos as $req_insumo) {
@@ -270,7 +311,8 @@ class RequisicionController extends Controller
                             'cantidad' => $req_insumo['cantidad'],
                             'total' => $req_insumo['total'],
                             'cantidad_validada' => $req_insumo['cantidad_validada'],
-                            'total_validado' => $req_insumo['total_validado']
+                            'total_validado' => $req_insumo['total_validado'],
+                            'proveedor_id' => $proveedor_id
                         ];
                     }
                     $requisicion->insumos()->sync([]);

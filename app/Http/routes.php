@@ -193,6 +193,9 @@ Route::group([ 'prefix' => 'v1'], function () {
                 }
            });
             
+            Route::get('catalogos/usuarios', 'UsuarioController@catalogos');
+            Route::get('catalogos/requisiciones', 'RequisicionController@catalogos');
+
             Route::resource('usuarios', 'UsuarioController',    ['only' => ['index', 'show','store', 'update', 'destroy']]);
             Route::resource('roles', 'RolController',           ['only' => ['index', 'show','store', 'update', 'destroy']]);
             Route::resource('permisos', 'PermisoController',    ['only' => ['index', 'show','store', 'update', 'destroy']]);
