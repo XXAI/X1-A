@@ -22,7 +22,7 @@ class ClonarActasController extends Controller{
 
             $acta = Acta::with('requisiciones.insumos','requisiciones.insumosClues')->find($id);
 
-            if(isset($parametros['clues'])){
+            /*if(isset($parametros['clues'])){
                 $clues_nueva = $parametros['clues'];
                 $configuracion = DB::select('select * from samm_unidades.configuracion where clues = ?',[$clues_nueva]);
                 
@@ -31,6 +31,14 @@ class ClonarActasController extends Controller{
                 }
             }else{
                 $clues_nueva = $acta->clues;
+            }*/
+
+            $clues_nueva = $acta->clues;
+
+            $configuracion = DB::select('select * from samm_unidades.configuracion where clues = ?',[$clues_nueva]);
+                
+            if(count($configuracion) == 0){
+                return Response::json(['error' => 'datos de configuración no encontrados'], 500);
             }
 
             if(isset($parametros['validado'])){
@@ -69,7 +77,7 @@ class ClonarActasController extends Controller{
 
             $nueva_acta->clues                         = $clues_nueva;
             //$nueva_acta->fecha_importacion             = $acta->fecha_importacion;
-            $nueva_acta->estatus                       = $max_estatus;
+            //$nueva_acta->estatus                       = $max_estatus;
             $nueva_acta->estatus_sincronizacion        = 1;
             $nueva_acta->updated_at                    = $acta->updated_at;
 
@@ -80,16 +88,16 @@ class ClonarActasController extends Controller{
             $nueva_acta->lugar_reunion  = $parametros['inputs']['lugar_reunion'];
 
 
-            if($clues_nueva != $acta->clues){
+            //if($clues_nueva != $acta->clues){
                 //$nueva_acta->ciudad                        = $configuracion[0]->localidad;
                 //$nueva_acta->lugar_reunion                 = $configuracion[0]->clues_nombre;
-                $nueva_acta->lugar_entrega                 = $configuracion[0]->lugar_entrega;
-                $nueva_acta->director_unidad               = $configuracion[0]->director_unidad;
-                $nueva_acta->administrador                 = $configuracion[0]->administrador;
-                $nueva_acta->encargado_almacen             = $configuracion[0]->encargado_almacen;
-                $nueva_acta->coordinador_comision_abasto   = $configuracion[0]->coordinador_comision_abasto;
-                $nueva_acta->empresa_clave                 = $configuracion[0]->empresa_clave;
-            }else{
+            $nueva_acta->lugar_entrega                 = $configuracion[0]->lugar_entrega;
+            $nueva_acta->director_unidad               = $configuracion[0]->director_unidad;
+            $nueva_acta->administrador                 = $configuracion[0]->administrador;
+            $nueva_acta->encargado_almacen             = $configuracion[0]->encargado_almacen;
+            $nueva_acta->coordinador_comision_abasto   = $configuracion[0]->coordinador_comision_abasto;
+            $nueva_acta->empresa_clave                 = $configuracion[0]->empresa_clave;
+            /*}else{
                 //$nueva_acta->ciudad                        = $acta->ciudad;
                 //$nueva_acta->lugar_reunion                 = $acta->lugar_reunion;
                 $nueva_acta->lugar_entrega                 = $acta->lugar_entrega;
@@ -98,10 +106,19 @@ class ClonarActasController extends Controller{
                 $nueva_acta->encargado_almacen             = $acta->encargado_almacen;
                 $nueva_acta->coordinador_comision_abasto   = $acta->coordinador_comision_abasto;
                 $nueva_acta->empresa_clave                 = $acta->empresa_clave;
+            }*/
+
+            if($max_estatus == 3){
+                if($nueva_acta->empresa_clave == 'exfarma'){
+                    $max_estatus = 4;
+                }else{
+                    $max_estatus = 3;
+                }
             }
 
-            //if($max_estatus >= 3){
-            if($max_estatus == 3){
+            $nueva_acta->estatus                       = $max_estatus;
+
+            if($max_estatus >= 3){
                 $nueva_acta->fecha_solicitud               = new DateTime();
                 $nueva_acta->fecha_validacion              = new DateTime();
 
@@ -115,16 +132,16 @@ class ClonarActasController extends Controller{
                     $max_requisicion = 0;
                 }
 
-                /*if($max_estatus == 4){
-                    $nueva_acta->fecha_pedido                  = $acta->fecha_pedido;
-                    $nueva_acta->fecha_termino                 = $acta->fecha_termino;
+                if($max_estatus == 4){
+                    $nueva_acta->fecha_pedido                  = date("Y-m-d");
+                    $nueva_acta->fecha_termino                 = date("Y-m-d H:i:s");
 
                     $max_oficio = Acta::max('num_oficio_pedido');
                     if(!$max_oficio){
                         $max_oficio = 0;
                     }
                     $nueva_acta->num_oficio_pedido = ($max_oficio + 1);
-                }*/
+                }
             }
 
             if($nueva_acta->save()){
@@ -133,8 +150,7 @@ class ClonarActasController extends Controller{
                 foreach ($acta->requisiciones as $requisicion) {
                     $nueva_requisicion = new Requisicion();
 
-                    //if($nueva_acta->estatus >= 3){
-                    if($nueva_acta->estatus == 3){
+                    if($nueva_acta->estatus >= 3){
                         $max_requisicion++;
                         $nueva_requisicion->numero                = $max_requisicion;
                         $nueva_requisicion->estatus               = $requisicion->estatus;
@@ -176,8 +192,13 @@ class ClonarActasController extends Controller{
                                 $lista_proveedores[$proveedor_id] = true;
                             }
                         }*/
+                        if($nueva_acta->empresa_clave == 'exfarma'){
+                            $proveedor_id = 7;
+                        }else{
+                            $proveedor_id = null;
+                        }
 
-                        if($nueva_acta->estatus == 3 && $req_insumo->pivot->cantidad_validada <= 0){
+                        if($nueva_acta->estatus >= 3 && $req_insumo->pivot->cantidad_validada <= 0){
                             continue;
                         }
 
@@ -195,7 +216,7 @@ class ClonarActasController extends Controller{
                             'total'             => $req_insumo->pivot->total,
                             'cantidad_validada' => $req_insumo->pivot->cantidad_validada,
                             'total_validado'    => $req_insumo->pivot->total_validado,
-                            'proveedor_id'      => null
+                            'proveedor_id'      => $proveedor_id
                         ];
                     }
                     $nueva_requisicion->insumos()->sync($insumos);
@@ -205,7 +226,7 @@ class ClonarActasController extends Controller{
                     if($nueva_acta->clues == $acta->clues){
                         $insumos = [];
                         foreach ($requisicion->insumosClues as $req_insumo) {
-                            if($nueva_acta->estatus == 3 && $req_insumo->pivot->cantidad_validada <= 0){
+                            if($nueva_acta->estatus >= 3 && $req_insumo->pivot->cantidad_validada <= 0){
                                 continue;
                             }
 
