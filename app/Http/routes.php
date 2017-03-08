@@ -140,6 +140,7 @@ Route::group([ 'prefix' => 'v1'], function () {
     Route::get('notificacion-pdf/{id}',    'PedidoController@generarNotificacionPDF');
     Route::get('exportar-csv/{id}',         'ActaController@generarJSON');
     Route::get('pedidos-excel/{id}','PedidosExcelController@generar');
+    Route::get('entrada-acta-excel/{id}',   'RecepcionController@generarExcel');
 
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     
@@ -214,8 +215,10 @@ Route::group([ 'prefix' => 'v1'], function () {
             Route::resource('actas',                'ActaController',               ['only' => ['index', 'show','store', 'update', 'destroy']]);
             Route::resource('requisiciones',        'RequisicionController',        ['only' => ['index', 'show', 'update']]);
             Route::resource('pedidos',              'PedidoController',             ['only' => ['index', 'show', 'update']]);
+            Route::resource('recepcion',            'RecepcionController',          ['only' => ['index', 'show']]);
             Route::resource('reportes/proveedores', 'ReporteProveedoresController', ['only' => ['index', 'show']]);
-            
+
+            Route::get('ver-entrada/{id}',          'RecepcionController@showEntrada');
     });
    
    Route::get('/restricted', function () {

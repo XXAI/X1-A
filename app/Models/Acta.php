@@ -24,5 +24,9 @@ class Acta extends Model {
 	public function empresa(){
     	return $this->hasOne('App\Models\Empresa','clave','empresa_clave');
     }
+
+    public function entradas(){
+        return $this->hasMany('App\Models\Entrada','acta_id')->orderBy('fecha_recibe','desc')->orderBy('hora_recibe','desc');
+    }
 	
 }
