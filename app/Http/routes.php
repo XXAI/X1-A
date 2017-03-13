@@ -141,6 +141,7 @@ Route::group([ 'prefix' => 'v1'], function () {
     Route::get('exportar-csv/{id}',         'ActaController@generarJSON');
     Route::get('pedidos-excel/{id}','PedidosExcelController@generar');
     Route::get('entrada-acta-excel/{id}',   'RecepcionController@generarExcel');
+    Route::get('entrada-acta-excel-concentrado',   'RecepcionController@generarExcelConcentrado');
 
     Route::group(['middleware' => 'oauth'], function(){
           Route::get('/permisos-autorizados', function () {     

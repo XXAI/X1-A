@@ -403,7 +403,7 @@ class ActaController extends Controller
                 //Solo si no tiene número de oficio, le generamos uno (Para casos de revalidación)
                 if(!$acta->num_oficio){
                     $max_oficio = Acta::max('num_oficio');
-                    $acta->num_oficio = $max_oficio+1;
+                    $acta->num_oficio = intval($max_oficio)+1;
                 }
                 
                 //Se obtiene el numero de requisición máximo
